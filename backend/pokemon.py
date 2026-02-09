@@ -1,4 +1,4 @@
-import json
+import math
 
 class Pokemon:
     def __init__(self, name, hp, level, attack, defense, p_type  ):
@@ -13,6 +13,7 @@ class Pokemon:
 
     def take_damage (self, amount):
         amount = amount - (self.defense / 10)
+        amount = math.ceil(amount)
         if amount < 1:
             amount = 1
         self.hp -= amount
@@ -20,17 +21,17 @@ class Pokemon:
             self.hp = 0
         return self.hp
 
-    def evolve(self, new_name, new_attack, new_hp, new_sprite_path):
-        if self.lvl >= 32:
-            self.name = new_name
-            self.attack = new_attack * 1.5
-            self.hp = new_hp * 1.5
-            self.sprite_path = new_sprite_path
-        elif self.lvl >= 16:
-            self.name = new_name
-            self.attack = new_attack
-            self.hp = new_hp
-            self.sprite_path = new_sprite_path
+    def evolve(self, evolution_data):
+        if not evolution_data:
+            return
+        if self.lvl >= evolution_data["level"]:
+            print(f"{self.name} evolve in {evolution_data['next_form']} !")
+            self.name = evolution_data["next_form"]
+            self.sprite_path = f"../assets/sprites/{self.name.lower()}.png"
+            self.hp += evolution_data["hp_bonus"]
+            self.attack += evolution_data["attack_bonus"]
+            self.hp = math.ceil(self.hp)
+            self.attack = math.ceil(self.attack)
         
 
     def new_level(self):
@@ -44,4 +45,3 @@ class Pokemon:
 
     def __str__(self):
         return f"{self.name} ({self.type}) - LVL {self.lvl} [HP : {self.hp}]"
-        
