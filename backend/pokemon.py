@@ -1,13 +1,13 @@
 import math
 
 class Pokemon:
-    def __init__(self, name, hp, level, attack, defense, p_type  ):
+    def __init__(self, name, hp, level, attack, defense, type  ):
         self.name = name
         self.lvl = level
         self.hp = hp
         self.attack = attack
         self.defense = defense
-        self.type = p_type
+        self.type = type
         self.sprite_path = f"../assets/sprites/{self.name.lower()}.png"
 
 
