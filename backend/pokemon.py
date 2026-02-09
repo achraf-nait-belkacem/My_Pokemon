@@ -12,6 +12,9 @@ class Pokemon:
 
 
     def take_damage (self, amount):
+        amount = amount - (self.defense / 10)
+        if amount < 1:
+            amount = 1
         self.hp -= amount
         if self.hp < 0 :
             self.hp = 0
