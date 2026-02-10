@@ -1,0 +1,302 @@
+[
+  {
+    "id": 1,
+    "name": "Bulbizarre",
+    "type": "Plante",
+    "hp": 45,
+    "attack": 49,
+    "defense": 49,
+    "level": 1,
+    "evolution": { "level": 16, "next_form": "Herbizarre", "hp_bonus": 15, "attack_bonus": 13 }
+  },
+  {
+    "id": 4,
+    "name": "Salameche",
+    "type": "Feu",
+    "hp": 39,
+    "attack": 52,
+    "defense": 43,
+    "level": 1,
+    "evolution": { "level": 16, "next_form": "Reptincel", "hp_bonus": 19, "attack_bonus": 12 }
+  },
+  {
+    "id": 7,
+    "name": "Carapuce",
+    "type": "Eau",
+    "hp": 44,
+    "attack": 48,
+    "defense": 65,
+    "level": 1,
+    "evolution": { "level": 16, "next_form": "Carabaffe", "hp_bonus": 15, "attack_bonus": 15 }
+  },
+  {
+    "id": 10,
+    "name": "Chenipan",
+    "type": "Insecte",
+    "hp": 45,
+    "attack": 30,
+    "defense": 35,
+    "level": 1,
+    "evolution": { "level": 7, "next_form": "Chrysacier", "hp_bonus": 5, "attack_bonus": -10 }
+  },
+  {
+    "id": 16,
+    "name": "Roucool",
+    "type": "Vol",
+    "hp": 40,
+    "attack": 45,
+    "defense": 40,
+    "level": 1,
+    "evolution": { "level": 18, "next_form": "Roucoups", "hp_bonus": 23, "attack_bonus": 15 }
+  },
+  {
+    "id": 19,
+    "name": "Rattata",
+    "type": "Normal",
+    "hp": 30,
+    "attack": 56,
+    "defense": 35,
+    "level": 1,
+    "evolution": { "level": 20, "next_form": "Rattatac", "hp_bonus": 25, "attack_bonus": 25 }
+  },
+  {
+    "id": 25,
+    "name": "Pikachu",
+    "type": "Electrik",
+    "hp": 35,
+    "attack": 55,
+    "defense": 40,
+    "level": 1,
+    "evolution": { "level": 30, "next_form": "Raichu", "hp_bonus": 25, "attack_bonus": 35 }
+  },
+  {
+    "id": 27,
+    "name": "Sabelette",
+    "type": "Sol",
+    "hp": 50,
+    "attack": 75,
+    "defense": 85,
+    "level": 1,
+    "evolution": { "level": 22, "next_form": "Sablaireau", "hp_bonus": 25, "attack_bonus": 25 }
+  },
+  {
+    "id": 37,
+    "name": "Goupix",
+    "type": "Feu",
+    "hp": 38,
+    "attack": 41,
+    "defense": 40,
+    "level": 1,
+    "evolution": { "level": 25, "next_form": "Feunard", "hp_bonus": 35, "attack_bonus": 35 }
+  },
+  {
+    "id": 39,
+    "name": "Rondoudou",
+    "type": "Normal",
+    "hp": 115,
+    "attack": 45,
+    "defense": 20,
+    "level": 1,
+    "evolution": { "level": 25, "next_form": "Grodoudou", "hp_bonus": 25, "attack_bonus": 25 }
+  },
+  {
+    "id": 41,
+    "name": "Nosferapti",
+    "type": "Poison",
+    "hp": 40,
+    "attack": 45,
+    "defense": 35,
+    "level": 1,
+    "evolution": { "level": 22, "next_form": "Nosferalto", "hp_bonus": 35, "attack_bonus": 35 }
+  },
+  {
+    "id": 43,
+    "name": "Mystherbe",
+    "type": "Plante",
+    "hp": 45,
+    "attack": 50,
+    "defense": 55,
+    "level": 1,
+    "evolution": { "level": 21, "next_form": "Ortide", "hp_bonus": 15, "attack_bonus": 15 }
+  },
+  {
+    "id": 50,
+    "name": "Taupiqueur",
+    "type": "Sol",
+    "hp": 10,
+    "attack": 55,
+    "defense": 25,
+    "level": 1,
+    "evolution": { "level": 26, "next_form": "Triopikeur", "hp_bonus": 25, "attack_bonus": 25 }
+  },
+  {
+    "id": 52,
+    "name": "Miaouss",
+    "type": "Normal",
+    "hp": 40,
+    "attack": 45,
+    "defense": 35,
+    "level": 1,
+    "evolution": { "level": 28, "next_form": "Persian", "hp_bonus": 25, "attack_bonus": 25 }
+  },
+  {
+    "id": 54,
+    "name": "Psykokwak",
+    "type": "Eau",
+    "hp": 50,
+    "attack": 52,
+    "defense": 48,
+    "level": 1,
+    "evolution": { "level": 33, "next_form": "Akwakwak", "hp_bonus": 30, "attack_bonus": 30 }
+  },
+  {
+    "id": 56,
+    "name": "Ferosinge",
+    "type": "Combat",
+    "hp": 40,
+    "attack": 80,
+    "defense": 35,
+    "level": 1,
+    "evolution": { "level": 28, "next_form": "Colossinge", "hp_bonus": 25, "attack_bonus": 25 }
+  },
+  {
+    "id": 58,
+    "name": "Caninos",
+    "type": "Feu",
+    "hp": 55,
+    "attack": 70,
+    "defense": 45,
+    "level": 1,
+    "evolution": { "level": 30, "next_form": "Arcanin", "hp_bonus": 35, "attack_bonus": 40 }
+  },
+  {
+    "id": 60,
+    "name": "Ptitard",
+    "type": "Eau",
+    "hp": 40,
+    "attack": 50,
+    "defense": 40,
+    "level": 1,
+    "evolution": { "level": 25, "next_form": "Tetarte", "hp_bonus": 25, "attack_bonus": 15 }
+  },
+  {
+    "id": 63,
+    "name": "Abra",
+    "type": "Psy",
+    "hp": 25,
+    "attack": 20,
+    "defense": 15,
+    "level": 1,
+    "evolution": { "level": 16, "next_form": "Kadabra", "hp_bonus": 15, "attack_bonus": 15 }
+  },
+  {
+    "id": 66,
+    "name": "Machoc",
+    "type": "Combat",
+    "hp": 70,
+    "attack": 80,
+    "defense": 50,
+    "level": 1,
+    "evolution": { "level": 28, "next_form": "Machopeur", "hp_bonus": 10, "attack_bonus": 20 }
+  },
+  {
+    "id": 74,
+    "name": "Racaillou",
+    "type": "Roche",
+    "hp": 40,
+    "attack": 80,
+    "defense": 100,
+    "level": 1,
+    "evolution": { "level": 25, "next_form": "Gravalanch", "hp_bonus": 15, "attack_bonus": 15 }
+  },
+  {
+    "id": 79,
+    "name": "Ramoloss",
+    "type": "Eau",
+    "hp": 90,
+    "attack": 65,
+    "defense": 65,
+    "level": 1,
+    "evolution": { "level": 37, "next_form": "Flagadoss", "hp_bonus": 5, "attack_bonus": 10 }
+  },
+  {
+    "id": 81,
+    "name": "Magneti",
+    "type": "Electrik",
+    "hp": 25,
+    "attack": 35,
+    "defense": 70,
+    "level": 1,
+    "evolution": { "level": 30, "next_form": "Magneton", "hp_bonus": 25, "attack_bonus": 25 }
+  },
+  {
+    "id": 90,
+    "name": "Kokiyas",
+    "type": "Eau",
+    "hp": 30,
+    "attack": 65,
+    "defense": 100,
+    "level": 1,
+    "evolution": { "level": 30, "next_form": "Crustabri", "hp_bonus": 20, "attack_bonus": 30 }
+  },
+  {
+    "id": 92,
+    "name": "Fantominus",
+    "type": "Spectre",
+    "hp": 30,
+    "attack": 35,
+    "defense": 30,
+    "level": 1,
+    "evolution": { "level": 25, "next_form": "Spectrum", "hp_bonus": 15, "attack_bonus": 15 }
+  },
+  {
+    "id": 95,
+    "name": "Onix",
+    "type": "Roche",
+    "hp": 35,
+    "attack": 45,
+    "defense": 160,
+    "level": 1,
+    "evolution": null
+  },
+  {
+    "id": 98,
+    "name": "Krabby",
+    "type": "Eau",
+    "hp": 30,
+    "attack": 105,
+    "defense": 90,
+    "level": 1,
+    "evolution": { "level": 28, "next_form": "Krabboss", "hp_bonus": 25, "attack_bonus": 25 }
+  },
+  {
+    "id": 104,
+    "name": "Oselet",
+    "type": "Sol",
+    "hp": 50,
+    "attack": 50,
+    "defense": 95,
+    "level": 1,
+    "evolution": { "level": 28, "next_form": "Ossatueur", "hp_bonus": 10, "attack_bonus": 30 }
+  },
+  {
+    "id": 133,
+    "name": "Evoli",
+    "type": "Normal",
+    "hp": 55,
+    "attack": 55,
+    "defense": 50,
+    "level": 1,
+    "evolution": { "level": 20, "next_form": "Aquali", "hp_bonus": 75, "attack_bonus": 10 }
+  },
+  {
+    "id": 147,
+    "name": "Minidraco",
+    "type": "Dragon",
+    "hp": 41,
+    "attack": 64,
+    "defense": 45,
+    "level": 1,
+    "evolution": { "level": 30, "next_form": "Draco", "hp_bonus": 20, "attack_bonus": 20 }
+  }
+]
