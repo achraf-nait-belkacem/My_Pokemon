@@ -110,10 +110,16 @@ class First_screen:
         
         elif self.state == "POKEDEX":
             self.screen.blit(self.bg_pokedex, (0, 0))
-        
+            max_visible = 5
 
-            for i, poke in enumerate(self.pokemons):
-                y_pos = 350 + (i * 100)
+            start_index = max(0, self.selected_index - max_visible // 2)
+            end_index = min(len(self.pokemons), start_index + max_visible)
+            if end_index - start_index < max_visible:
+                start_index = max(0, end_index - max_visible)
+
+            for relative_i, i in enumerate(range(start_index, end_index)):
+                poke = self.pokemons[i]
+                y_pos = 350 + (relative_i * 100)
                 is_selected = (i == self.selected_index)
                 current_color = (200, 150, 0) if i == self.moving_index else None
 
@@ -126,7 +132,7 @@ class First_screen:
                     try:
                         sprite = pygame.image.load(poke.sprite_path).convert_alpha()
                         sprite = pygame.transform.scale(sprite, (300, 300))
-                        self.screen.blit(sprite, (200, 400)) 
+                        self.screen.blit(sprite, (200, 300)) 
                         
                         stats = f"HP: {poke.hp} | ATK: {poke.attack} | DEF: {poke.defense}"
                         txt_surf = self.font.render(stats, True, (255, 255, 255))
