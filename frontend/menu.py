@@ -1,5 +1,8 @@
 import pygame
 from pygame.locals import *
+from backend.pokemon import Pokemon
+import os
+import json
 
 class First_screen:
     def __init__(self, screen):
@@ -9,7 +12,7 @@ class First_screen:
         self.button_tool = Rect()
         self.font = pygame.font.SysFont("Arial", 30)
 
-        self.pokemons = ["Pikachu", "Bulbizarre", "Salamèche", "Carapuce"]
+        self.pokemons = self.load_pokedex_from_json()
         self.moving_index = None
 
 
@@ -21,6 +24,43 @@ class First_screen:
         self.state = "MENU"
         self.selected_index = 0
         self.buttons_count = 3
+
+    def load_pokedex_from_json(self):
+        with open ("data/pokemon.json", "r", encoding="utf-8") as f:
+            all_pokemons_data = json.load(f)
+        
+        data_by_id = {p["id"]: p for p in all_pokemons_data}
+
+        save_path = "data/save.json"
+        if not os.path.exists(save_path):
+            owned_ids = [1]
+            with open (save_path, "w") as f:
+                json.dump(owned_ids, f)
+        else : 
+            with open (save_path, "r") as f:
+                owned_ids = json.load(f)
+
+        owned_pokemons = []
+        for p_id in owned_ids:
+            if p_id in data_by_id:
+                p_data = data_by_id[p_id]
+                new_poke = Pokemon(
+                p_data["name"], 
+                p_data["hp"], 
+                p_data["level"], 
+                p_data["attack"], 
+                p_data["defense"], 
+                p_data["type"]
+            )
+                new_poke.id = p_id
+                owned_pokemons.append(new_poke)
+    
+        return owned_pokemons
+    
+    def save_current_order(self):
+        owned_ids = [poke.id for poke in self.pokemons]
+        with open("data/save.json", "w") as f:
+            json.dump(owned_ids, f)
     
     def handle_events(self):
         for event in pygame.event.get():
@@ -54,6 +94,7 @@ class First_screen:
                             i1, i2 = self.moving_index, self.selected_index
                             self.pokemons[i1], self.pokemons[i2] = self.pokemons[i2], self.pokemons[i1]
                             self.moving_index = None
+                            self.save_current_order()
                     elif event.key == pygame.K_ESCAPE:
                         self.state = "MENU"
                         self.moving_index = None
@@ -70,14 +111,28 @@ class First_screen:
         elif self.state == "POKEDEX":
             self.screen.blit(self.bg_pokedex, (0, 0))
 
-            for i, name in enumerate(self.pokemons):
+            for i, poke in enumerate(self.pokemons):
                 y_pos = 350 + (i * 100)
+                is_selected = (i == self.selected_index)
                 current_color = (200, 150, 0) if i == self.moving_index else None
 
                 self.button_tool.draw_buttons(
-                    self.screen, name, 750, y_pos, 400, 80,
-                    self.font, (i == self.selected_index), current_color
+                    self.screen, poke.name, 750, y_pos, 400, 80,
+                    self.font, is_selected, current_color
                 )
+
+                if is_selected:
+                    try:
+                        sprite = pygame.image.load(poke.sprite_path).convert_alpha()
+                        sprite = pygame.transform.scale(sprite, (300, 300))
+                        self.screen.blit(sprite, (200, 400)) 
+                        
+                        stats = f"HP: {poke.hp} | ATK: {poke.attack} | DEF: {poke.defense}"
+                        txt_surf = self.font.render(stats, True, (255, 255, 255))
+                        self.screen.blit(txt_surf, (150, 720))
+                    except:
+                        error_txt = self.font.render("Image non trouvée", True, (255, 0, 0))
+                        self.screen.blit(error_txt, (200, 400))
             
         pygame.display.flip()
 

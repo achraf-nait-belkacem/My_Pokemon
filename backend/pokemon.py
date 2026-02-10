@@ -8,7 +8,7 @@ class Pokemon:
         self.attack = attack
         self.defense = defense
         self.type = type
-        self.sprite_path = f"../assets/sprites/{self.name.lower()}.png"
+        self.sprite_path = f"assets/sprites/{self.name.lower()}.png"
 
 
     def take_damage (self, amount):
