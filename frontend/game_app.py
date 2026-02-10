@@ -1,6 +1,5 @@
 import pygame
-from loading import Loading_menu
-from menu import First_screen
+
 
 class GameApp:
     def __init__(self):
@@ -18,16 +17,3 @@ class GameApp:
             self.screen.blit(fade, (0, 0))
             pygame.display.update()
             pygame.time.delay(10)
-
-    def run(self):
-
-        loading = Loading_menu(self.screen)
-        loading.run()
-        self.fade_out()
-        menu = First_screen(self.screen)
-        menu.run()
-        pygame.quit()
-
-if __name__ == "__main__":
-    app = GameApp()
-    app.run()

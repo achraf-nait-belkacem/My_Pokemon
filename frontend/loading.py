@@ -7,8 +7,8 @@ class Loading_menu:
         self.running = True
         self.clock = pygame.time.Clock()
 
-        self.bg = pygame.image.load("../assets/sprites/bg.png").convert_alpha()
-        self.text = pygame.image.load("../assets/sprites/txt.png").convert_alpha()
+        self.bg = pygame.image.load("assets/sprites/bg.png").convert_alpha()
+        self.text = pygame.image.load("assets/sprites/txt.png").convert_alpha()
 
     def handle_events(self):
         for event in pygame.event.get():
