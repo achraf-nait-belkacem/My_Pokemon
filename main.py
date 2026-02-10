@@ -10,6 +10,7 @@ def main():
     screen = pygame.display.set_mode((1920, 1080))
     pygame.display.set_caption("My_Pokemon")
     fade = GameApp()
+    pygame.mouse.set_visible(False)
     loading = Loading_menu(screen)
     loading.run()
     fade.fade_out()
