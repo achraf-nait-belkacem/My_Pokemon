@@ -9,6 +9,9 @@ class First_screen:
         self.button_tool = Rect()
         self.font = pygame.font.SysFont("Arial", 30)
 
+        self.pokemons = ["Pikachu", "Bulbizarre", "Salamèche", "Carapuce"]
+        self.moving_index = None
+
 
         self.bg = pygame.image.load("assets/sprites/poke_bg.png").convert_alpha()
         self.bg = pygame.transform.scale(self.bg, (1920, 1000))
@@ -27,9 +30,9 @@ class First_screen:
             if event.type == pygame.KEYDOWN:
                 if self.state == "MENU":
                     if event.key == pygame.K_UP:
-                        self.selected_index = (self.selected_index - 1) % 3                        
+                        self.selected_index = (self.selected_index - 1) % self.buttons_count                       
                     elif event.key == pygame.K_DOWN:
-                        self.selected_index = (self.selected_index + 1) % 3
+                        self.selected_index = (self.selected_index + 1) % self.buttons_count
                     elif event.key == pygame.K_RETURN:
                         if self.selected_index == 0:
                             self.running = False
@@ -40,8 +43,20 @@ class First_screen:
                             pygame.quit()
 
                 elif self.state == "POKEDEX":
-                    if event.key == pygame.K_RETURN or event.key == pygame.K_BACKSPACE:
+                    if event.key == pygame.K_UP:
+                        self.selected_index = (self.selected_index - 1) % len(self.pokemons)
+                    elif event.key == pygame.K_DOWN:
+                        self.selected_index = (self.selected_index + 1) % len(self.pokemons)
+                    elif event.key == pygame.K_RETURN:
+                        if self.moving_index is None:
+                            self.moving_index = self.selected_index
+                        else : 
+                            i1, i2 = self.moving_index, self.selected_index
+                            self.pokemons[i1], self.pokemons[i2] = self.pokemons[i2], self.pokemons[i1]
+                            self.moving_index = None
+                    elif event.key == pygame.K_ESCAPE:
                         self.state = "MENU"
+                        self.moving_index = None
 
     def draw(self):
         self.screen.fill((30, 30, 30))
@@ -54,6 +69,15 @@ class First_screen:
         
         elif self.state == "POKEDEX":
             self.screen.blit(self.bg_pokedex, (0, 0))
+
+            for i, name in enumerate(self.pokemons):
+                y_pos = 350 + (i * 100)
+                current_color = (200, 150, 0) if i == self.moving_index else None
+
+                self.button_tool.draw_buttons(
+                    self.screen, name, 750, y_pos, 400, 80,
+                    self.font, (i == self.selected_index), current_color
+                )
             
         pygame.display.flip()
 
