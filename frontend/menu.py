@@ -110,6 +110,7 @@ class First_screen:
         
         elif self.state == "POKEDEX":
             self.screen.blit(self.bg_pokedex, (0, 0))
+        
 
             for i, poke in enumerate(self.pokemons):
                 y_pos = 350 + (i * 100)
