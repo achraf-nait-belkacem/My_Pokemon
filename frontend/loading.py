@@ -17,6 +17,8 @@ class Loading_menu:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
                     pygame.quit()
+                if event.key == pygame.K_RETURN:
+                    self.running = False
 
     def update(self):
         pass
@@ -34,13 +36,4 @@ class Loading_menu:
             self.draw()
             self.clock.tick(60)
 
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode((0, 0))
-    pygame.display.set_caption("My_Pokemon")
-    menu = Loading_menu(screen)
-    menu.run()
-    pygame.quit
-
-main()
 
