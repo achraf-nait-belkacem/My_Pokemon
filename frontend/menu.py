@@ -14,22 +14,29 @@ class First_screen:
         self.play_button_jouer = None
         self.play_button_pokedex = None
         self.play_button_quit = None
+        self.selected_index = 0
+        self.buttons_count = 3
     
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == QUIT:
                 self.running = False
             
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    if self.play_button_jouer and self.play_button_jouer.collidepoint(event.pos):
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.selected_index = (self.selected_index - 1) % 3                        
+                    
+                elif event.key == pygame.K_DOWN:
+                    self.selected_index = (self.selected_index + 1) % 3
+
+                
+                elif event.key == pygame.K_RETURN:
+                    if self.selected_index == 0:
                         print("Lancement du jeu")
                         self.running = False
-                    
-                    elif self.play_button_pokedex and self.play_button_pokedex.collidepoint(event.pos):
+                    if self.selected_index == 1:
                         print("Ouverture du pokedex")
-                    
-                    elif self.play_button_quit and self.play_button_quit.collidepoint(event.pos):
+                    if self.selected_index == 2:
                         self.running = False
                         pygame.quit()
 
@@ -39,10 +46,9 @@ class First_screen:
     def draw(self):
         self.screen.fill((30, 30, 30))
         self.screen.blit(self.bg,(0, 0))
-        mouse_pos = pygame.mouse.get_pos()
-        self.play_button_jouer = self.button_tool.draw_buttons(self.screen, "JOUER", 860, 300, 200, 60, self.font, mouse_pos)
-        self.play_button_pokedex = self.button_tool.draw_buttons(self.screen, "POKEDEX", 860, 450, 200, 60, self.font, mouse_pos)
-        self.play_button_quit = self.button_tool.draw_buttons(self.screen, "QUIT", 860, 600, 200, 60, self.font, mouse_pos, self.button_tool.danger_color)
+        self.play_button_jouer = self.button_tool.draw_buttons(self.screen, "JOUER", 860, 300, 200, 60, self.font, self.selected_index == 0)
+        self.play_button_pokedex = self.button_tool.draw_buttons(self.screen, "POKEDEX", 860, 450, 200, 60, self.font, self.selected_index == 1)
+        self.play_button_quit = self.button_tool.draw_buttons(self.screen, "QUIT", 860, 600, 200, 60, self.font, self.selected_index == 2, self.button_tool.danger_color)
         pygame.display.flip()
 
     def run(self):
@@ -61,14 +67,13 @@ class Rect:
         self.danger_color = (255, 50, 50)
         self.default_accent = (140, 100, 40)
 
-    def draw_buttons(self, screen, text, x, y, w, h, font, mouse_pos, color = None):
+    def draw_buttons(self, screen, text, x, y, w, h, font, is_selected, color = None):
         if color is None:
             color = self.default_accent
 
         button_rect = pygame.Rect(x, y , w, h)
-        is_hovered = button_rect.collidepoint(mouse_pos)
 
-        bg_color = (min(color[0]+30, 255), min(color[1] + 30, 255), min(color[2] + 30, 255)) if is_hovered else color
+        bg_color = (min(color[0]+30, 255), min(color[1] + 30, 255), min(color[2] + 30, 255)) if is_selected else color
         pygame.draw.rect(screen, bg_color, button_rect, border_radius=12)
         text_surf = font.render(text, True, self.white)
         text_rect = text_surf.get_rect(center=button_rect.center)
