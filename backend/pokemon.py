@@ -10,6 +10,14 @@ class Pokemon:
         self.type = type
         self.sprite_path = f"assets/sprites/{self.name.lower()}.png"
         self.defeated_ennemi_ids = []
+        self.xp = 0
+
+    def gain_xp(self, amount):
+        self.xp += amount
+        print(f"{self.name} a gagné {amount} XP")
+        if self.xp >= 100:
+            self.new_level()
+            self.xp -= 100
 
 
     def take_damage (self, amount):
