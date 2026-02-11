@@ -9,6 +9,7 @@ class Pokemon:
         self.defense = defense
         self.type = type
         self.sprite_path = f"assets/sprites/{self.name.lower()}.png"
+        self.defeated_ennemi_ids = []
 
 
     def take_damage (self, amount):

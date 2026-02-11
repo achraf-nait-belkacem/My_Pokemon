@@ -15,7 +15,7 @@ class First_screen:
         self.pokemons = self.load_pokedex_from_json()
         self.ennemi = self.load_ennemi_from_json()
         self.moving_index = None
-
+        self.selected_ennemi_ids = []
 
         self.bg = pygame.image.load("assets/sprites/poke_bg.png").convert_alpha()
         self.bg = pygame.transform.scale(self.bg, (1920, 1000))
@@ -46,13 +46,13 @@ class First_screen:
             if p_id in data_by_id:
                 p_data = data_by_id[p_id]
                 new_poke = Pokemon(
-                p_data["name"], 
-                p_data["hp"], 
-                p_data["level"], 
-                p_data["attack"], 
-                p_data["defense"], 
-                p_data["type"]
-            )
+                    p_data["name"], 
+                    p_data["hp"], 
+                    p_data["level"], 
+                    p_data["attack"], 
+                    p_data["defense"], 
+                    p_data["type"]
+                )
                 new_poke.id = p_id
                 owned_pokemons.append(new_poke)
     
@@ -61,31 +61,18 @@ class First_screen:
     def load_ennemi_from_json(self):
         with open ("data/pokemon.json", "r", encoding="utf-8") as f:
             all_pokemons_data = json.load(f)
-        
-        data_by_id = {p["id"]: p for p in all_pokemons_data}
-
-        save_path = "data/ennemi.json"
-        if not os.path.exists(save_path):
-            owned_ids = [1]
-            with open (save_path, "w") as f:
-                json.dump(owned_ids, f)
-        else : 
-            with open (save_path, "r") as f:
-                owned_ids = json.load(f)
 
         ennemi_pokemons = []
-        for p_id in owned_ids:
-            if p_id in data_by_id:
-                p_data = data_by_id[p_id]
+        for p_data in all_pokemons_data:
                 new_poke = Pokemon(
-                p_data["name"], 
-                p_data["hp"], 
-                p_data["level"], 
-                p_data["attack"], 
-                p_data["defense"], 
-                p_data["type"]
-            )
-                new_poke.id = p_id
+                    p_data["name"], 
+                    p_data["hp"], 
+                    p_data["level"], 
+                    p_data["attack"], 
+                    p_data["defense"], 
+                    p_data["type"]
+                )
+                new_poke.id = p_data["id"]
                 ennemi_pokemons.append(new_poke)
     
         return ennemi_pokemons
@@ -99,6 +86,7 @@ class First_screen:
         for event in pygame.event.get():
             if event.type == QUIT:
                 self.running = False
+                return "QUIT"
             
             if event.type == pygame.KEYDOWN:
                 if self.state == "MENU":
@@ -107,12 +95,16 @@ class First_screen:
                     elif event.key == pygame.K_DOWN:
                         self.selected_index = (self.selected_index + 1) % self.buttons_count
                     elif event.key == pygame.K_RETURN:
-                        if self.selected_index == 0:
-                            self.running = False
+                        if self.selected_index == 0: # JOUER
+                            if self.selected_ennemi_ids:
+                                # On filtre et on renvoie les objets Pokémon choisis
+                                return [p for p in self.ennemi if p.id in self.selected_ennemi_ids]
+                            else:
+                                print("Choisissez au moins un ennemi !")
                         elif self.selected_index == 1:
                             self.state = "POKEDEX"
                         elif self.selected_index == 2:
-                            self.state == "ENNEMI"
+                            self.state = "ENNEMI"
                         elif self.selected_index == 3:
                             self.running = False
                             pygame.quit()
@@ -136,20 +128,19 @@ class First_screen:
 
                 elif self.state == "ENNEMI":
                     if event.key == pygame.K_UP:
-                        self.selected_index = (self.selected_index - 1) % len(self.pokemons)
+                        self.selected_index = (self.selected_index - 1) % len(self.ennemi)
                     elif event.key == pygame.K_DOWN:
-                        self.selected_index = (self.selected_index + 1) % len(self.pokemons)
+                        self.selected_index = (self.selected_index + 1) % len(self.ennemi)
                     elif event.key == pygame.K_RETURN:
-                        if self.moving_index is None:
-                            self.moving_index = self.selected_index
-                        else : 
-                            i1, i2 = self.moving_index, self.selected_index
-                            self.pokemons[i1], self.pokemons[i2] = self.pokemons[i2], self.pokemons[i1]
-                            self.moving_index = None
-                            self.save_current_order()
+                        target_id = self.ennemi[self.selected_index].id
+                        if target_id in self.selected_ennemi_ids:
+                            self.selected_ennemi_ids.remove(target_id)
+                        else:
+                            self.selected_ennemi_ids.append(target_id)
                     elif event.key == pygame.K_ESCAPE:
                         self.state = "MENU"
                         self.moving_index = None
+        return None
 
     def draw(self):
         self.screen.fill((30, 30, 30))
@@ -174,7 +165,13 @@ class First_screen:
                 poke = self.ennemi[i]
                 y_pos = 350 + (relative_i * 100)
                 is_selected = (i == self.selected_index)
-                current_color = (200, 150, 0) if i == self.moving_index else None
+                
+                # Gestion des couleurs : Vert si choisi, Orange si déplacé, sinon Default
+                current_color = None
+                if poke.id in self.selected_ennemi_ids:
+                    current_color = (50, 200, 50)
+                if i == self.moving_index:
+                    current_color = (200, 150, 0)
 
                 self.button_tool.draw_buttons(
                     self.screen, poke.name, 750, y_pos, 400, 80,
@@ -189,11 +186,10 @@ class First_screen:
                         
                         stats = f"HP: {poke.hp} | ATK: {poke.attack} | DEF: {poke.defense} TYPE : {poke.type}"
                         txt_surf = self.font.render(stats, True, (255, 255, 255))
-                        self.screen.blit(txt_surf, (150, 720))
+                        self.screen.blit(txt_surf, (80, 720))
                     except:
                         error_txt = self.font.render("Image non trouvée", True, (255, 0, 0))
                         self.screen.blit(error_txt, (200, 400))
-
         
         elif self.state == "POKEDEX":
             self.screen.blit(self.bg_pokedex, (0, 0))
@@ -232,7 +228,9 @@ class First_screen:
 
     def run(self):
         while self.running:
-            self.handle_events()
+            result = self.handle_events()
+            if result:
+                return result 
             self.draw()
             self.clock.tick(60)
 
