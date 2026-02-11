@@ -1,22 +1,38 @@
 import pygame
+import random
 from frontend.loading import Loading_menu
-from frontend.menu import First_screen
-from frontend.game_app import GameApp
+from frontend.first_screen import First_screen
 
-import pygame
+def fade_out(screen):
+    fade = pygame.Surface((1920, 1000))
+    fade.fill((0, 0, 0))
+    for alpha in range(0, 255, 5):
+        fade.set_alpha(alpha)
+        screen.blit(fade, (0, 0))
+        pygame.display.update()
+        pygame.time.delay(15)
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((1920, 1080))
+    screen = pygame.display.set_mode((1920, 1000))
     pygame.display.set_caption("My_Pokemon")
-    fade = GameApp()
-    pygame.mouse.set_visible(False)
-    loading = Loading_menu(screen)
-    loading.run()
-    fade.fade_out()
+    
+    loader = Loading_menu(screen)
+    loader.run()
+    
+    fade_out(screen)
+
     menu = First_screen(screen)
-    menu.run()
-    pygame.quit
+    data = menu.run()
+
+    if data and data != "QUIT":
+        fade_out(screen)
+        equipe = data["Equipe"]
+        ennemis = data["Ennemis possibles"]
+        adversaire = random.choice(ennemis)
+        print(f"Joueur: {equipe[0].name} vs Ennemi: {adversaire.name}")
+
+    pygame.quit()
 
 if __name__ == "__main__":
     main()
