@@ -6,7 +6,7 @@ class SpriteAnimation:
         self.sprite = pygame.image.load(image_path).convert_alpha()
         self.sprite = pygame.transform.scale(self.sprite, (120, 120))
 
-        self.base_x, self.base_y = position
+        self.x, self.y = position
         self.state = "idle"
         self.timer = 0
 
@@ -19,7 +19,7 @@ class SpriteAnimation:
     def draw_idle(self, screen):
         offset = math.sin(self.timer * 0.1) * 4
         rect = self.sprite.get_rect(
-            center=(self.base_x, self.base_y + offset)
+            center=(self.x, self.y + offset)
         )
         screen.blit(self.sprite, rect)
 
@@ -27,21 +27,21 @@ class SpriteAnimation:
         shake = [-10, 10, -6, 6, -3, 3, 0]
         offset = shake[min(self.timer, len(shake) - 1)]
         rect = self.sprite.get_rect(
-            center=(self.base_x + offset, self.base_y)
+            center=(self.x + offset, self.y)
         )
         screen.blit(self.sprite, rect)
 
     def draw_hit(self, screen):
         flash = self.sprite.copy()
         flash.fill((255, 0, 0, 120), special_flags=pygame.BLEND_RGBA_ADD)
-        rect = flash.get_rect(center=(self.base_x, self.base_y))
+        rect = flash.get_rect(center=(self.x, self.y))
         screen.blit(flash, rect)
 
     def draw_ko(self, screen):
         alpha = max(0, 255 - self.timer * 8)
         fade = self.sprite.copy()
         fade.set_alpha(alpha)
-        rect = fade.get_rect(center=(self.base_x, self.base_y))
+        rect = fade.get_rect(center=(self.x, self.y))
         screen.blit(fade, rect)
 
     def update(self, screen):
