@@ -16,4 +16,4 @@ class GameApp:
             fade.set_alpha(alpha)
             self.screen.blit(fade, (0, 0))
             pygame.display.update()
-            pygame.time.delay(10)
+            pygame.time.delay(15)
