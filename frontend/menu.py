@@ -95,9 +95,8 @@ class First_screen:
                     elif event.key == pygame.K_DOWN:
                         self.selected_index = (self.selected_index + 1) % self.buttons_count
                     elif event.key == pygame.K_RETURN:
-                        if self.selected_index == 0: # JOUER
+                        if self.selected_index == 0:
                             if self.selected_ennemi_ids:
-                                # On filtre et on renvoie les objets Pokémon choisis
                                 return [p for p in self.ennemi if p.id in self.selected_ennemi_ids]
                             else:
                                 print("Choisissez au moins un ennemi !")
@@ -166,7 +165,6 @@ class First_screen:
                 y_pos = 350 + (relative_i * 100)
                 is_selected = (i == self.selected_index)
                 
-                # Gestion des couleurs : Vert si choisi, Orange si déplacé, sinon Default
                 current_color = None
                 if poke.id in self.selected_ennemi_ids:
                     current_color = (50, 200, 50)
