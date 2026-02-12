@@ -45,3 +45,11 @@ class DataManager:
         owned_ids = [poke.id for poke in pokemons]
         with open(self.save_path, "w") as f:
             json.dump(owned_ids, f)
+
+    def load_type_chart(self):
+        try : 
+            with open("data/types.json", "r", encoding="utf-8") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print("ERROR : File don't exist")
+            return {}

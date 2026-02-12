@@ -1,7 +1,5 @@
 import random
 
-"""Déclancer le combat et créer un objet de la class combat"""
-
 class Setcombat :
     def __init__(self, player_pokemon_list, enemy_pokemon_list):
         self.player_pokemon = player_pokemon_list

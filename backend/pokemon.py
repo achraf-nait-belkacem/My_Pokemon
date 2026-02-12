@@ -50,7 +50,9 @@ class Pokemon:
         if self.hp <= 0:
             print(f"{self.name} is KO choose an other pokemon")
         return self.hp > 0
-        
+    
+    def get_type(self):
+        return self.type
 
     def __str__(self):
         return f"{self.name} ({self.type}) - LVL {self.lvl} [HP : {self.hp}]"
