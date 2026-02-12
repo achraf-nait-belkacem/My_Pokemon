@@ -12,6 +12,7 @@ class Pokemon:
         self.defeated_ennemi_ids = []
 
 
+
     def take_damage (self, amount):
         amount = amount - (self.defense / 10)
         amount = math.ceil(amount)

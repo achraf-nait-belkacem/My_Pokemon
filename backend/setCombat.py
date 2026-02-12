@@ -1,18 +1,23 @@
 import random
+from combat import Combat
 
 class Setcombat :
     def __init__(self, player_pokemon_list, enemy_pokemon_list):
         self.player_pokemon = player_pokemon_list
-        self.enemy_pokemon = random.choice(enemy_pokemon_list)
+        self.enemy_pokemon = enemy_pokemon_list
 
-    def pick_player(self):
-        return self.player_pokemon[0]
+    def pick_player(self, index):
+        return self.player_pokemon[index]
 
     def pick_enemy(self):
-        return self.enemy_pokemon
+        choice = random.choice(self.enemy_pokemon)
+        return choice
 
     def create_combat(self):
-        pass
+        player_pokemon = self.pick_player()
+        enemy_pokemon = self.pick_enemy()
+        return Combat(player_pokemon, enemy_pokemon)
 
     def start_combat(self):
-        pass
+        combat = self.create_combat()
+        return combat.start()
