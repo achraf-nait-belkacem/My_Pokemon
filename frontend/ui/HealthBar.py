@@ -27,9 +27,9 @@ class HealthBar:
         pygame.draw.rect(surface, "black", (self.x, self.y, self.width, self.height),2)
 
         #pokemon name
-        self.font = pygame.font.SysFont("arial", 18)
+        self.font = pygame.font.SysFont("assets/fonts/pokemon_font.ttf", 25)
         name_text = self.font.render(self.name, True, "black")
-        surface.blit(name_text, (self.x + 10, self.y + 5))
+        surface.blit(name_text, (self.x + 10, self.y + 10))
 
         #pokemon icon
         if self.icon:
@@ -50,4 +50,5 @@ class HealthBar:
             xp_ratio = self.xp / self.max_xp
             xp_height = 8
 
+            pygame.draw.rect(surface, "black", (self.x, self.y + self.height + 5, self.width , xp_height))
             pygame.draw.rect(surface, "blue", (self.x, self.y + self.height + 5, self.width * xp_ratio, xp_height))
