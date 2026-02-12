@@ -1,7 +1,8 @@
 import pygame
 from pygame.locals import *
 from frontend.utils import Rect
-from backend.data_manager import DataManager
+# On importe la classe DataManager et non des fonctions qui n'existent pas seules
+from backend.data_manager import DataManager 
 
 class First_screen:
     def __init__(self, screen):
@@ -11,12 +12,18 @@ class First_screen:
         self.button_tool = Rect()
         self.font = pygame.font.SysFont("Arial", 30)
 
+        # On crée l'outil de gestion des données
         self.db = DataManager()
+        
+        # On utilise l'outil pour charger les listes
         self.pokemons = self.db.load_pokedex()
         self.ennemi = self.db.load_all_ennemi()
 
         self.moving_index = None
-        self.selected_ennemi_ids = []
+        
+        # --- MODIFICATION : Liste d'ennemis par défaut ---
+        # On remplit la liste avec tous les IDs d'ennemis chargés automatiquement
+        self.selected_ennemi_ids = [p.id for p in self.ennemi]
         
         self.bg = pygame.transform.scale(pygame.image.load("assets/sprites/poke_bg.png").convert_alpha(), (1920, 1000))
         self.bg_pokedex = pygame.transform.scale(pygame.image.load("assets/sprites/bg_pokedex.png").convert_alpha(), (1920, 1000))
@@ -39,13 +46,20 @@ class First_screen:
                         self.selected_index = (self.selected_index + 1) % self.buttons_count
                     elif event.key == pygame.K_RETURN:
                         if self.selected_index == 0:
-                            if self.selected_ennemi_ids:
-                                return {
-                                    "Equipe": self.pokemons, 
-                                    "Ennemis possibles": [p for p in self.ennemi if p.id in self.selected_ennemi_ids]
-                                }
-                        elif self.selected_index == 1: self.state = "POKEDEX"
-                        elif self.selected_index == 2: self.state = "ENNEMI"
+                            # --- SÉCURITÉ : On vérifie s'il y a des ennemis, sinon on remet tout ---
+                            if not self.selected_ennemi_ids:
+                                self.selected_ennemi_ids = [p.id for p in self.ennemi]
+                                
+                            return {
+                                "Equipe": self.pokemons, 
+                                "Ennemis possibles": [p for p in self.ennemi if p.id in self.selected_ennemi_ids]
+                            }
+                        elif self.selected_index == 1: 
+                            self.state = "POKEDEX"
+                            self.selected_index = 0 # Reset index
+                        elif self.selected_index == 2: 
+                            self.state = "ENNEMI"
+                            self.selected_index = 0 # Reset index
                         elif self.selected_index == 3: return "QUIT"
 
                 elif self.state == "POKEDEX":
@@ -63,6 +77,7 @@ class First_screen:
                             self.db.save_team(self.pokemons)
                     elif event.key == pygame.K_ESCAPE: 
                         self.state = "MENU"
+                        self.selected_index = 1 # Focus sur POKEDEX
                         self.moving_index = None
 
                 elif self.state == "ENNEMI":
@@ -78,6 +93,7 @@ class First_screen:
                             self.selected_ennemi_ids.append(target_id)
                     elif event.key == pygame.K_ESCAPE: 
                         self.state = "MENU"
+                        self.selected_index = 2 # Focus sur ENNEMI
         return None
 
     def draw(self):
@@ -102,6 +118,7 @@ class First_screen:
                 y_pos = 350 + (relative_i * 100)
                 is_selected = (i == self.selected_index)
                 
+                # Couleur verte si l'ennemi est dans la liste de combat
                 color = None
                 if self.state == "ENNEMI" and poke.id in self.selected_ennemi_ids:
                     color = (50, 200, 50)

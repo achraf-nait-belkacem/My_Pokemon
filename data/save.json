@@ -1,1 +1,55 @@
-[4, 7, 1]
+[
+    {
+        "id": 1,
+        "name": "Herbizarre",
+        "level": 16,
+        "xp": 10
+    },
+    {
+        "id": 74,
+        "name": "Racaillou",
+        "level": 1,
+        "xp": 0
+    },
+    {
+        "id": 52,
+        "name": "Miaouss",
+        "level": 1,
+        "xp": 0
+    },
+    {
+        "id": 54,
+        "name": "Psykokwak",
+        "level": 1,
+        "xp": 0
+    },
+    {
+        "id": 98,
+        "name": "Krabby",
+        "level": 1,
+        "xp": 0
+    },
+    {
+        "id": 39,
+        "name": "Rondoudou",
+        "level": 1,
+        "xp": 0
+    },
+    {
+        "id": 147,
+        "level": 1,
+        "xp": 0
+    },
+    {
+        "id": 92,
+        "name": "Fantominus",
+        "level": 1,
+        "xp": 0
+    },
+    {
+        "id": 16,
+        "name": "Roucool",
+        "level": 1,
+        "xp": 0
+    }
+]

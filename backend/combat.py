@@ -1,92 +1,125 @@
 import random
-from pokemon import Pokemon
+import json
+import os
 
-
-class Combat :
+class Combat:
     def __init__(self, player_pokemon, enemy_pokemon):
         self.player_pokemon = player_pokemon
         self.enemy_pokemon = enemy_pokemon
         self.turn = 1
+        self.type_chart = self.load_type_chart()
 
-    def start(self):
-        while not self.win_check():
-            attacker, defender = self.get_attacker_defendre()
-            self.attack(attacker, defender)
-            
-            self.switch_turn()
+    def load_type_chart(self):
+        """Charge la table des types pour calculer l'efficacité des attaques."""
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        root_path = os.path.dirname(base_path)
+        path = os.path.join(root_path, "data", "types.json")
+        
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return data
+            except Exception as e:
+                print(f"❌ Erreur lecture JSON : {e}")
+        return {}
 
-        return self.get_winner()
+    def get_multiplier(self, attacker, defender):
+        """Récupère le multiplicateur de dégâts (ex: x2.0 pour l'eau sur le feu)."""
+        # On s'assure de récupérer le type en string proprement formaté
+        atk_type = str(getattr(attacker, 'type', attacker)).strip().capitalize()
+        def_type = str(getattr(defender, 'type', defender)).strip().capitalize()
+        
+        return self.type_chart.get(atk_type, {}).get(def_type, 1.0)
+
+    def calculate_damage(self, attacker, defender):
+        """Calcule les dégâts en fonction de l'attaque, la défense et les types."""
+        multiplier = self.get_multiplier(attacker, defender)
+        
+        # Ratio Atk / Def (évite la division par zéro si la def est nulle)
+        ratio = attacker.attack / max(1, defender.defense)
+        
+        # Puissance de base
+        base_power = 15 
+        
+        # Calcul final : Ratio * Puissance * Multiplicateur de type
+        damage = (ratio * base_power) * multiplier
+        
+        # On ajoute un petit bonus fixe (+2) pour éviter les dégâts à 0
+        final_damage = int(damage) + 2
+        
+        # Message d'efficacité pour le feedback
+        if multiplier > 1: print("✨ C'est super efficace !")
+        elif multiplier < 1: print("🛡️ Ce n'est pas très efficace...")
+        
+        return max(1, final_damage)
 
     def attack(self, attacker, defender):
-
-        if self.miss_attack():
+        """Exécute une attaque : gère l'esquive et inflige les dégâts."""
+        # 5% de chance de rater
+        if random.random() < 0.05:
+            print(f"💨 {attacker.name} a raté son coup !")
             return 0
 
         damage = self.calculate_damage(attacker, defender)
-
-        defender.take_damage (damage)
+        defender.take_damage(damage)
         
-    def get_attacker_defendre(self):
+        print(f"⚔️ {attacker.name} inflige {damage} dégâts à {defender.name}")
+        return damage
 
-        if self.turn == 1:
-            return self.player_pokemon, self.enemy_pokemon
-        else:
-            return self.enemy_pokemon, self.player_pokemon
+    def gain_xp(self, winner, loser):
+        """Calcule l'XP et vérifie l'évolution après le gain de niveau."""
+        xp_amount = loser.lvl * 15
+        print(f"📈 {winner.name} gagne {xp_amount} XP")
+        
+        old_lvl = winner.lvl
+        winner.gain_xp(xp_amount) # On suppose que cette méthode gère le passage de niveau
+        
+        # --- LOGIQUE D'ÉVOLUTION ---
+        self.check_evolution(winner)
+        
+        return winner.lvl > old_lvl
 
-    def matching(self, type1, type2):
+    def check_evolution(self, pokemon):
+        """Vérifie dans pokemon.json si le pokemon doit évoluer."""
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        root_path = os.path.dirname(base_path)
+        path = os.path.join(root_path, "data", "pokemon.json")
 
-        table = {
-        "Acier": {"Acier": 0.5, "Eau": 0.5, "Electrik": 0.5, "Feu": 0.5, "Fée": 2.0, "Glace": 2.0, "Roche": 2.0},
-        "Combat": {"Acier": 2.0, "Fée": 0.5, "Glace": 2.0, "Insecte": 0.5, "Normal": 2.0, "Poison": 0.5, "Psy": 0.5, "Roche": 2.0, "Spectre": 0.0, "Ténèbres": 2.0},
-        "Dragon": {"Acier": 0.5, "Dragon": 2.0, "Fée": 0.0},
-        "Eau": {"Dragon": 0.5, "Eau": 0.5, "Feu": 2.0, "Plante": 0.5, "Roche": 2.0, "Sol": 2.0},
-        "Electrik": {"Dragon": 0.5, "Eau": 2.0, "Electrik": 0.5, "Plante": 0.5, "Sol": 0.0, "Vol": 2.0},
-        "Feu": {"Acier": 2.0, "Dragon": 0.5, "Eau": 0.5, "Feu": 0.5, "Glace": 2.0, "Insecte": 2.0, "Plante": 2.0, "Roche": 0.5},
-        "Fée": {"Acier": 0.5, "Combat": 2.0, "Dragon": 2.0, "Feu": 0.5, "Poison": 0.5, "Ténèbres": 2.0},
-        "Glace": {"Acier": 0.5, "Dragon": 2.0, "Eau": 0.5, "Feu": 0.5, "Glace": 0.5, "Plante": 2.0, "Sol": 2.0, "Vol": 2.0},
-        "Insecte": {"Acier": 0.5, "Combat": 0.5, "Feu": 0.5, "Fée": 0.5, "Plante": 2.0, "Poison": 0.5, "Psy": 2.0, "Spectre": 0.5, "Ténèbres": 2.0, "Vol": 0.5},
-        "Normal": {"Acier": 0.5, "Roche": 0.5, "Spectre": 0.0},
-        "Plante": {"Acier": 0.5, "Dragon": 0.5, "Eau": 2.0, "Feu": 0.5, "Insecte": 0.5, "Plante": 0.5, "Poison": 0.5, "Roche": 2.0, "Sol": 2.0, "Vol": 0.5},
-        "Poison": {"Acier": 0.0, "Fée": 2.0, "Plante": 2.0, "Poison": 0.5, "Roche": 0.5, "Sol": 0.5, "Spectre": 0.5},
-        "Psy": {"Acier": 0.5, "Combat": 2.0, "Poison": 2.0, "Psy": 0.5, "Ténèbres": 0.0},
-        "Roche": {"Acier": 0.5, "Combat": 0.5, "Feu": 2.0, "Glace": 2.0, "Insecte": 2.0, "Sol": 0.5, "Vol": 2.0},
-        "Sol": {"Acier": 2.0, "Electrik": 2.0, "Feu": 2.0, "Insecte": 0.5, "Plante": 0.5, "Poison": 2.0, "Roche": 2.0, "Vol": 0.0},
-        "Spectre": {"Normal": 0.0, "Psy": 2.0, "Spectre": 2.0, "Ténèbres": 0.5},
-        "Ténèbres": {"Combat": 0.5, "Fée": 0.5, "Psy": 2.0, "Spectre": 2.0, "Ténèbres": 0.5},
-        "Vol": {"Electrik": 0.5, "Insecte": 2.0, "Plante": 2.0, "Roche": 0.5, "Combat": 2.0}
-        }
+        if not os.path.exists(path):
+            return
 
-        return table.get(type1, {}).get(type2, 1.0)
+        with open(path, "r", encoding="utf-8") as f:
+            all_pokemon_data = json.load(f)
 
-    def miss_attack(self):
-        return random.random() < 0.1
-    
-
-    def calculate_damage(self, attacker, defender):
-
-        multiplier = self.matching(attacker.type, defender.type)
-
-        damage = attacker.attack * multiplier
-
-        return max(1, int(damage))
+        # On cherche les données du Pokémon actuel par son ID
+        for p_data in all_pokemon_data:
+            if p_data["id"] == pokemon.id:
+                evo_info = p_data.get("evolution")
+                
+                # Si une évolution existe et que le niveau est suffisant
+                if evo_info and pokemon.lvl >= evo_info["level"]:
+                    print(f"🌟 INCROYABLE ! {pokemon.name} évolue en {evo_info['next_form']} !")
+                    
+                    # On change l'identité du Pokémon
+                    pokemon.name = evo_info["next_form"]
+                    
+                    # On applique les bonus d'évolution
+                    pokemon.max_hp += evo_info.get("hp_bonus", 0)
+                    pokemon.hp = pokemon.max_hp # Soins complets lors de l'évolution
+                    pokemon.base_attack += evo_info.get("attack_bonus", 0)
+                    
+                    # On met à jour le sprite pour le prochain combat
+                    pokemon.sprite_path = f"assets/sprites/{pokemon.name.lower()}.png"
+                    
+                    # Si tu as une méthode de recalcul des stats, on l'appelle
+                    if hasattr(pokemon, 'recalc_stats'):
+                        pokemon.recalc_stats()
 
     def switch_turn(self):
-        if self.turn == 1 :
-            attacker = self.player_pokemon
-            defender = self.enemy_pokemon
-            self.turn *= -1
-            return attacker, defender
-        elif self.turn == -1 :
-            attacker = self.enemy_pokemon
-            defender = self.player_pokemon
-            self.turn *= -1
-            return attacker, defender
+        """Alterne entre le tour du joueur (1) et de l'ennemi (-1)."""
+        self.turn *= -1
 
     def win_check(self):
+        """Vérifie si l'un des deux combattants est K.O."""
         return self.player_pokemon.hp <= 0 or self.enemy_pokemon.hp <= 0
-
-    def get_winner(self):
-        if self.enemy_pokemon.hp <= 0:
-            return self.player_pokemon
-        elif self.player_pokemon.hp <= 0:
-            return self.enemy_pokemon
