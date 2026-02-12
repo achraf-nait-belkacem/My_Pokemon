@@ -1,5 +1,5 @@
 import random
-
+from backend.combat import Combat
 class Setcombat :
     def __init__(self, player_pokemon_list, enemy_pokemon_list):
         self.player_pokemon = player_pokemon_list
@@ -14,7 +14,7 @@ class Setcombat :
     def create_combat(self):
         active_player = self.pick_player()
         active_enemy = self.pick_enemy()
-        return combat(active_player, active_enemy)
+        return Combat(active_player, active_enemy)
         
 
     def start_combat(self):
