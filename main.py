@@ -2,6 +2,7 @@ import pygame
 import random
 import sys
 import os
+import json
 from SpriteAnimation import PokemonSprite
 from frontend.loading import Loading_menu
 from frontend.first_screen import First_screen
@@ -13,11 +14,13 @@ from backend.data_manager import DataManager
 
 def draw_ui(screen, pokemon, x, y):
     font = pygame.font.SysFont("Arial", 22, bold=True)
-    # On affiche le nom actuel (qui change lors de l'évolution)
     txt_header = font.render(f"{pokemon.name.upper()}  Nv. {pokemon.lvl}", True, (255, 255, 255))
     screen.blit(txt_header, (x, y))
     
+    # Calcul du ratio avec sécurité
     ratio = pokemon.hp / pokemon.max_hp if pokemon.max_hp > 0 else 0
+    ratio = min(1.0, ratio) # Empêche la barre de dépasser si HP > MaxHP (bug 94/79)
+    
     bar_width = 250
     pygame.draw.rect(screen, (30, 30, 30), (x, y + 30, bar_width, 8))
     color = (0, 255, 127) if ratio > 0.5 else (255, 165, 0) if ratio > 0.2 else (255, 50, 50)
@@ -47,6 +50,12 @@ def play_battle(screen, data):
     db = DataManager()
     font_button = pygame.font.SysFont("Arial", 26, bold=True)
 
+    # Chargement du pokedex complet pour les données d'évolution
+    pokedex_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "pokemon.json")
+    with open(pokedex_path, "r", encoding="utf-8") as f:
+        pokedex_full = json.load(f)
+    pokedex_dict = {p["id"]: p for p in pokedex_full}
+
     equipe = data["Equipe"][:6] 
     for p in equipe:
         if hasattr(p, 'recalc_stats'):
@@ -56,14 +65,8 @@ def play_battle(screen, data):
     
     def get_new_ennemi():
         modele = random.choice(data["Ennemis possibles"])
-        
         if not os.path.exists(modele.sprite_path):
-            print(f"⚠️ Image manquante: {modele.sprite_path}. Utilisation du défaut.")
             modele.sprite_path = "assets/sprites/default.png"
-
-        p_id = getattr(modele, 'id', 'AUCUN')
-        print(f"DEBUG: Nouveau combat contre {modele.name} (ID: {p_id})")
-        
         if hasattr(modele, 'recalc_stats'):
             modele.recalc_stats()
         modele.hp = modele.max_hp
@@ -150,27 +153,24 @@ def play_battle(screen, data):
 
         # --- LOGIQUE DE VICTOIRE, ÉVOLUTION ET SAUVEGARDE ---
         if not adversaire.is_alive() and not getattr(adversaire, 'processed', False):
-            print(f"Victoire contre {adversaire.name} (ID: {getattr(adversaire, 'id', 'Inconnu')})")
-            
-            # Stockage du nom avant gain d'XP pour détecter l'évolution
             nom_avant = mon_pkm.name
             
+            # 1. Gain d'XP (Les PV restent blessés + bonus de niveau)
             if combat_moteur.gain_xp(mon_pkm, adversaire):
                 level_up_msg = f"LEVEL UP ! {mon_pkm.name} est Nv. {mon_pkm.lvl}"
                 
-                # SI LE NOM A CHANGÉ -> ÉVOLUTION !
-                if mon_pkm.name != nom_avant:
-                    print(f"✨ ÉVOLUTION : {nom_avant} -> {mon_pkm.name}")
-                    level_up_msg = f"INCROYABLE ! {nom_avant} devient {mon_pkm.name} !"
-                    # Mise à jour immédiate du visuel
-                    joueur_sprite = PokemonSprite(mon_pkm.sprite_path, (500, 650), size=(200, 200))
-            
-            # Sauvegarde de l'équipe (XP + Nouveau Nom)
+                # 2. Tentative d'évolution
+                p_data = pokedex_dict.get(mon_pkm.id)
+                if p_data and "evolution" in p_data:
+                    if mon_pkm.evolve(p_data["evolution"]):
+                        level_up_msg = f"INCROYABLE ! {nom_avant} devient {mon_pkm.name} !"
+                        
+                        # --- C'EST CETTE LIGNE QUI CHANGE L'IMAGE À L'ÉCRAN ---
+                        joueur_sprite = PokemonSprite(mon_pkm.sprite_path, (500, 650), size=(200, 200))
+
+            # 3. Sauvegardes persistantes
             db.save_team(equipe)
-            
-            # Ajout de l'ennemi au pokedex (Capture)
             db.add_to_save(adversaire)
-            
             adversaire.processed = True
 
         if not show_confirm and not show_team and turn_wait > 0:
@@ -208,8 +208,7 @@ def play_battle(screen, data):
             txt = pygame.font.SysFont("Arial", 40, bold=True).render(msg, True, (0, 255, 127))
             screen.blit(txt, txt.get_rect(center=(960, 450)))
             if level_up_msg:
-                # Couleur dorée pour l'évolution/level up
-                color = (255, 215, 0) if "devent" in level_up_msg or "!" in level_up_msg else (255, 255, 255)
+                color = (255, 215, 0) if "devient" in level_up_msg or "INCROYABLE" in level_up_msg else (255, 255, 255)
                 lvl_txt = pygame.font.SysFont("Arial", 30, bold=True).render(level_up_msg, True, color)
                 screen.blit(lvl_txt, lvl_txt.get_rect(center=(960, 510)))
 
@@ -223,7 +222,7 @@ def play_battle(screen, data):
                 is_sel = (i == team_idx)
                 ui_rect_tool.draw_buttons(screen, f"{p.name} (Nv. {p.lvl})", 760, y_pos, 400, 70, font_button, is_sel)
                 if is_sel:
-                    txt = font_button.render(f"{p.name} (HP: {max(0, int(p.hp))}/{p.max_hp})", True, (0, 0, 0))
+                    txt = font_button.render(f"{p.name} (HP: {max(0, int(p.hp))}/{p.max_hp})", True, (255, 255, 255))
                     screen.blit(txt, txt.get_rect(center=(960, y_pos + 35)))
 
         if show_confirm: draw_confirm_popup(screen, "Voulez-vous vraiment fuir ?", confirm_idx, ui_rect_tool, font_button)
