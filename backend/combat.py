@@ -11,15 +11,12 @@ class Combat:
 
     def load_type_chart(self):
         base_path = os.path.dirname(os.path.abspath(__file__))
-        root_path = os.path.dirname(base_path)
-        path = os.path.join(root_path, "data", "types.json")
-        
+        path = os.path.join(os.path.dirname(base_path), "data", "types.json")
         if os.path.exists(path):
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     return json.load(f)
-            except:
-                pass
+            except: pass
         return {}
 
     def get_multiplier(self, attacker, defender):
@@ -30,20 +27,18 @@ class Combat:
     def calculate_damage(self, attacker, defender):
         multiplier = self.get_multiplier(attacker, defender)
         ratio = attacker.attack / max(1, defender.defense)
-        base_power = 15 
-        damage = (ratio * base_power) * multiplier
+        damage = (ratio * 15) * multiplier
         return max(1, int(damage) + 2)
 
     def attack(self, attacker, defender):
-        if random.random() < 0.05:
-            return 0
-
+        if random.random() < 0.05: return 0
         damage = self.calculate_damage(attacker, defender)
         defender.take_damage(damage)
         return damage
 
     def gain_xp(self, winner, loser):
-        xp_amount = loser.lvl * 15
+        # Gain d'XP équilibré : 20 XP par niveau de l'adversaire
+        xp_amount = loser.lvl * 20
         return winner.gain_xp(xp_amount) 
 
     def switch_turn(self):

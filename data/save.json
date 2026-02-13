@@ -1,51 +1,44 @@
 [
     {
+        "id": 1,
+        "name": "Herbizarre",
+        "level": 20,
+        "xp": 40,
+        "current_hp": 100
+    },
+    {
         "id": 74,
         "name": "Racaillou",
         "level": 1,
         "xp": 75,
-        "current_hp": 0.0
-    },
-    {
-        "id": 1,
-        "name": "Herbizarre",
-        "level": 17,
-        "xp": 50,
-        "current_hp": 0
+        "current_hp": 42
     },
     {
         "id": 52,
         "name": "Miaouss",
         "level": 1,
         "xp": 15,
-        "current_hp": 14.0
+        "current_hp": 42
     },
     {
         "id": 54,
         "name": "Psykokwak",
         "level": 1,
-        "xp": 15,
-        "current_hp": 52.0
+        "xp": 30,
+        "current_hp": 52
     },
     {
         "id": 98,
         "name": "Krabby",
         "level": 1,
-        "xp": 15,
-        "current_hp": 32.0
+        "xp": 30,
+        "current_hp": 32
     },
     {
         "id": 39,
         "name": "Rondoudou",
         "level": 1,
-        "xp": 0,
-        "current_hp": 117.0
-    },
-    {
-        "id": 133,
-        "name": "Evoli",
-        "level": 1,
-        "xp": 0,
-        "current_hp": 57
+        "xp": 45,
+        "current_hp": 117
     }
 ]
