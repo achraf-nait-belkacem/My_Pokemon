@@ -2,50 +2,50 @@
     {
         "id": 1,
         "name": "Bulbizarre",
-        "level": 5,
-        "xp": 75,
-        "current_hp": 55
+        "level": 12,
+        "xp": 20,
+        "current_hp": 85
     },
     {
         "id": 4,
         "name": "Salameche",
-        "level": 5,
-        "xp": 70,
-        "current_hp": 49
+        "level": 8,
+        "xp": 50,
+        "current_hp": 69
     },
     {
         "id": 7,
         "name": "Carapuce",
-        "level": 5,
-        "xp": 85,
-        "current_hp": 54
+        "level": 8,
+        "xp": 10,
+        "current_hp": 74
     },
     {
         "id": 50,
         "name": "Taupiqueur",
-        "level": 1,
-        "xp": 10,
-        "current_hp": 12
+        "level": 3,
+        "xp": 25,
+        "current_hp": 28
     },
     {
         "id": 66,
         "name": "Machoc",
-        "level": 1,
-        "xp": 10,
-        "current_hp": 72
+        "level": 3,
+        "xp": 25,
+        "current_hp": 88
     },
     {
         "id": 104,
         "name": "Oselet",
-        "level": 1,
-        "xp": 10,
-        "current_hp": 52
+        "level": 3,
+        "xp": 25,
+        "current_hp": 68
     },
     {
         "id": 95,
         "name": "Onix",
         "level": 1,
         "xp": 0,
-        "current_hp": 37
+        "current_hp": 48
     }
 ]

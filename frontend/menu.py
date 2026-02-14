@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-
 class First_screen:
     def __init__(self, screen):
         self.screen = screen
@@ -15,7 +14,6 @@ class First_screen:
         self.state = "MENU"
         self.selected_index = 0
         self.buttons_count = 3
-    
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -37,7 +35,6 @@ class First_screen:
                 elif self.state == "POKEDEX":
                     if event.key == pygame.K_RETURN or event.key == pygame.K_BACKSPACE:
                         self.state = "MENU"
-
     def draw(self):
         self.screen.fill((30, 30, 30))
         if self.state == "MENU":
@@ -48,19 +45,16 @@ class First_screen:
         elif self.state == "POKEDEX":
             self.screen.blit(self.bg_pokedex, (0, 0))
         pygame.display.flip()
-
     def run(self):
         while self.running:
             self.handle_events()
             self.draw()
             self.clock.tick(60)
-
 class Rect:
     def __init__(self):
         self.white = (255, 255, 255)
         self.danger_color = (255, 50, 50)
         self.default_accent = (140, 100, 40)
-
     def draw_buttons(self, screen, text, x, y, w, h, font, is_selected, color = None):
         if color is None:
             color = self.default_accent

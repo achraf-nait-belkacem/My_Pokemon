@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-
 class Loading_menu:
     def __init__(self, screen):
         self.screen = screen
@@ -8,7 +7,6 @@ class Loading_menu:
         self.clock = pygame.time.Clock()
         self.bg = pygame.image.load("assets/sprites/bg.png").convert_alpha()
         self.text = pygame.image.load("assets/sprites/txt.png").convert_alpha()
-
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -21,16 +19,13 @@ class Loading_menu:
                 if event.key == pygame.K_RETURN:
                     self.running = False
         return None
-
     def update(self):
         pass
-
     def draw(self):
         self.screen.fill((30, 30, 30))
         self.screen.blit(self.bg, (0, 0))
         self.screen.blit(self.text, (0, 0))
         pygame.display.flip()
-
     def run(self):
         while self.running:
             result = self.handle_events()
