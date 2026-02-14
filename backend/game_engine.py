@@ -12,222 +12,205 @@ from backend.data_manager import DataManager
 class GameEngine:
     def __init__(self):
         pygame.init()
-        # Configuration de la fenêtre
         self.screen = pygame.display.set_mode((1920, 1000))
         pygame.display.set_caption("My_Pokemon")
         self.clock = pygame.time.Clock()
-        
-        # Outils et gestion des données
-        self.ui_rect_tool = Rect()
+        self.ui_rect_tool = Rect() # Ta classe dans frontend/utils.py
         self.db = DataManager()
-        
-        # Polices
-        self.font_button = pygame.font.SysFont("Arial", 26, bold=True)
-        self.font_ui = pygame.font.SysFont("Arial", 22, bold=True)
-        
-        # Chargement des données globales
         self.pokedex_dict = self._load_pokedex_data()
+        
+        # Configuration Visuelle
+        self.colors = {
+            "white": (255, 255, 255), "shadow": (40, 40, 40),
+            "bg_dark": (30, 30, 40), "hp_green": (0, 255, 127),
+            "hp_yellow": (255, 215, 0), "hp_red": (255, 69, 0),
+            "victory": (0, 255, 127), "alert": (255, 80, 80),
+            "overlay": (0, 0, 0, 180), "panel": (35, 35, 55)
+        }
+        self.font_btn = pygame.font.SysFont("Arial", 26, bold=True)
+        self.font_ui = pygame.font.SysFont("Arial", 22, bold=True)
+        self.font_lg = pygame.font.SysFont("Arial", 40, bold=True)
+        self.background = self._load_background()
+
+    # --- Chargement & Utilitaires ---
+    def _load_background(self):
+        path = os.path.join("assets/sprites", "battle_bg.png")
+        if os.path.exists(path):
+            img = pygame.image.load(path).convert()
+            return pygame.transform.scale(img, (1920, 1000))
+        return None
 
     def _load_pokedex_data(self):
-        """Charge les données du Pokédex pour gérer les évolutions."""
-        path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "pokemon.json")
+        base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        path = os.path.join(base_path, "data", "pokemon.json")
         try:
             with open(path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-            return {p["id"]: p for p in data}
-        except Exception as e:
-            print(f"Erreur chargement pokedex: {e}")
-            return {}
+                return {p["id"]: p for p in json.load(f)}
+        except Exception: return {}
 
-    def draw_ui(self, pokemon, x, y):
-        """Affiche le nom, le niveau et la barre de PV d'un Pokémon."""
-        # Nom et Niveau
-        txt_header = self.font_ui.render(f"{pokemon.name.upper()}  Nv. {pokemon.lvl}", True, (255, 255, 255))
-        self.screen.blit(txt_header, (x, y))
-        
-        # Barre de PV (Fond noir)
-        pygame.draw.rect(self.screen, (30, 30, 30), (x, y + 30, 250, 8))
-        
-        # Calcul de la largeur de la barre de vie
-        ratio = min(1.0, pokemon.hp / pokemon.max_hp if pokemon.max_hp > 0 else 0)
-        color = (0, 255, 127) if ratio > 0.5 else (255, 165, 0) if ratio > 0.2 else (255, 50, 50)
-        pygame.draw.rect(self.screen, color, (x, y + 30, int(250 * ratio), 8))
-        
-        # Texte des PV
-        txt_pv = self.font_ui.render(f"{max(0, int(pokemon.hp))} / {pokemon.max_hp}", True, (255, 255, 255))
-        self.screen.blit(txt_pv, txt_pv.get_rect(center=(x + 125, y + 50)))
+    def _spawn_ennemi(self, ennemis_possibles):
+        e = random.choice(ennemis_possibles)
+        e.recalc_stats()
+        e.hp, e.processed = e.max_hp, False
+        return e
 
-    def draw_confirm_popup(self, text, selected_index):
-        """Affiche une fenêtre de confirmation (Oui/Non)."""
-        overlay = pygame.Surface((1920, 1000), pygame.SRCALPHA)
-        overlay.fill((0, 0, 0, 180)) 
-        self.screen.blit(overlay, (0, 0))
+    # --- Initialisation du Combat ---
+    def _init_battle(self, data):
+        self.battle_running = True
+        self.next_state = "MENU"
+        self.equipe = data["Equipe"][:6]
+        self.ennemis_possibles = data["Ennemis possibles"]
         
-        box_rect = pygame.Rect(660, 350, 600, 300)
-        pygame.draw.rect(self.screen, (45, 45, 65), box_rect, border_radius=15)
-        pygame.draw.rect(self.screen, (255, 255, 255), box_rect, 3, border_radius=15)
-        
-        msg = pygame.font.SysFont("Arial", 35, bold=True).render(text, True, (255, 255, 255))
-        self.screen.blit(msg, msg.get_rect(center=(960, 420)))
-        
-        self.ui_rect_tool.draw_buttons(self.screen, "OUI", 710, 520, 200, 60, self.font_button, selected_index == 0)
-        self.ui_rect_tool.draw_buttons(self.screen, "NON", 1010, 520, 200, 60, self.font_button, selected_index == 1)
-
-    def play_battle(self, data):
-        """Boucle principale de la scène de combat."""
-        equipe = data["Equipe"][:6]
-        for p in equipe:
+        for p in self.equipe: 
             if hasattr(p, 'recalc_stats'): p.recalc_stats()
+            
+        self.mon_pkm = next((p for p in self.equipe if p.hp > 0), self.equipe[0])
+        self.adversaire = self._spawn_ennemi(self.ennemis_possibles)
         
-        mon_pkm = next((p for p in equipe if p.hp > 0), equipe[0])
+        self.p_sprite = PokemonSprite(self.mon_pkm.sprite_path, (450, 550))
+        self.e_sprite = PokemonSprite(self.adversaire.sprite_path, (1350, 250))
+        self.combat = Combat(self.mon_pkm, self.adversaire)
         
-        def get_new_ennemi():
-            modele = random.choice(data["Ennemis possibles"])
-            if hasattr(modele, 'recalc_stats'): modele.recalc_stats()
-            modele.hp = modele.max_hp
-            modele.processed = False 
-            return modele
+        self.state = {"idx": 0, "conf": 1, "team": 0, "show_conf": False, "show_team": False, "wait": 0, "msg": ""}
+        self.actions = ["ATTAQUER", "EQUIPE", "FUITE"]
 
-        adversaire = get_new_ennemi()
-        joueur_sprite = PokemonSprite(mon_pkm.sprite_path, (500, 650))
-        ennemi_sprite = PokemonSprite(adversaire.sprite_path, (1400, 300))
-        combat_moteur = Combat(mon_pkm, adversaire)
-        
-        actions = ["ATTAQUER", "EQUIPE", "FUITE"]
-        action_idx, confirm_idx, team_idx = 0, 1, 0
-        show_confirm, show_team = False, False
-        turn_wait = 0 
-        level_up_msg = ""
+    # --- Gestion des Entrées (Input) ---
+    def _handle_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: 
+                self.battle_running = False
+                self.next_state = "QUIT"
+            
+            if event.type == pygame.KEYDOWN:
+                if self.state["show_team"]: self._handle_team_input(event)
+                elif self.state["show_conf"]: self._handle_conf_input(event)
+                else: self._handle_main_input(event)
 
-        while True:
+    def _handle_main_input(self, event):
+        if self.mon_pkm.is_alive() and self.adversaire.is_alive() and self.state["wait"] == 0:
+            if event.key == pygame.K_LEFT: self.state["idx"] = (self.state["idx"] - 1) % 3
+            elif event.key == pygame.K_RIGHT: self.state["idx"] = (self.state["idx"] + 1) % 3
+            elif event.key == pygame.K_RETURN:
+                act = self.actions[self.state["idx"]]
+                if act == "ATTAQUER":
+                    self.p_sprite.set_state("attack")
+                    self.combat.attack(self.mon_pkm, self.adversaire)
+                    self.e_sprite.set_state("hit")
+                    self.state["wait"] = 80
+                elif act == "EQUIPE": self.state["show_team"] = True
+                elif act == "FUITE": self.state["show_conf"] = True
+        
+        elif not self.adversaire.is_alive() and event.key == pygame.K_RETURN:
+            self._reset_battle()
+
+    def _handle_team_input(self, event):
+        if event.key == pygame.K_UP: self.state["team"] = (self.state["team"] - 1) % len(self.equipe)
+        elif event.key == pygame.K_DOWN: self.state["team"] = (self.state["team"] + 1) % len(self.equipe)
+        elif event.key == pygame.K_ESCAPE and self.mon_pkm.is_alive(): self.state["show_team"] = False
+        elif event.key == pygame.K_RETURN:
+            new_p = self.equipe[self.state["team"]]
+            if new_p.is_alive():
+                self.mon_pkm = new_p
+                self.p_sprite = PokemonSprite(self.mon_pkm.sprite_path, (450, 550))
+                self.combat.player_pokemon = self.mon_pkm
+                self.state["show_team"], self.state["wait"] = False, 0
+
+    def _handle_conf_input(self, event):
+        if event.key == pygame.K_LEFT: self.state["conf"] = 0
+        elif event.key == pygame.K_RIGHT: self.state["conf"] = 1
+        elif event.key == pygame.K_RETURN:
+            if self.state["conf"] == 0:
+                for p in self.equipe: p.hp = p.max_hp
+                self.db.save_team(self.equipe)
+                self.battle_running = False
+            else: self.state["show_conf"] = False
+
+    def _reset_battle(self):
+        self.adversaire = self._spawn_ennemi(self.ennemis_possibles)
+        self.e_sprite = PokemonSprite(self.adversaire.sprite_path, (1350, 250))
+        self.combat.enemy_pokemon = self.adversaire
+        self.state["msg"] = ""
+
+    # --- Logique de Mise à Jour ---
+    def _update_logic(self):
+        self.p_sprite.update()
+        self.e_sprite.update()
+        
+        if not self.adversaire.is_alive() and not getattr(self.adversaire, 'processed', False):
+            self._process_victory()
+
+        if not self.state["show_conf"] and not self.state["show_team"] and self.state["wait"] > 0:
+            self.state["wait"] -= 1
+            if self.state["wait"] == 40 and self.adversaire.is_alive() and self.mon_pkm.is_alive():
+                self.e_sprite.set_state("attack")
+                self.combat.attack(self.adversaire, self.mon_pkm)
+                self.p_sprite.set_state("hit")
+        
+        if not self.mon_pkm.is_alive() and not self.state["show_team"] and self.state["wait"] == 0:
+            self.state["show_team"] = True
+            self.state["team"] = self.equipe.index(self.mon_pkm)
+
+    def _process_victory(self):
+        base_xp = self.adversaire.lvl * 20 
+        level_ups = []
+        for pkm in self.equipe:
+            if pkm.is_alive():
+                gain = base_xp if pkm == self.mon_pkm else base_xp // 4
+                if pkm.gain_xp(gain): level_ups.append(f"{pkm.name} Nv.{pkm.lvl}")
+        
+        self.state["msg"] = f"UP: {', '.join(level_ups)}" if level_ups else f"{self.mon_pkm.name} gagne {base_xp} XP"
+        self.db.add_to_save(self.adversaire)
+        self.db.save_team(self.equipe)
+        self.adversaire.processed = True
+
+    # --- Rendu Graphique (Délégué à self.ui_rect_tool) ---
+    def _render_all(self):
+        # Fond & Sprites
+        if self.background: self.screen.blit(self.background, (0, 0))
+        else: self.screen.fill(self.colors["bg_dark"])
+        self.p_sprite.draw(self.screen)
+        self.e_sprite.draw(self.screen)
+        
+        # UI Pokemons (Maintenant géré par Rect)
+        if self.mon_pkm.is_alive(): 
+            self.ui_rect_tool.draw_pokemon_stats(self.screen, self.mon_pkm, 375, 750, self.font_ui)
+        if self.adversaire.is_alive(): 
+            self.ui_rect_tool.draw_pokemon_stats(self.screen, self.adversaire, 1275, 80, self.font_ui)
+
+        # Victoire Screen
+        if not self.adversaire.is_alive():
+            txt = self.font_lg.render(f"{self.adversaire.name.upper()} VAINCU !", True, self.colors["victory"])
+            self.screen.blit(txt, txt.get_rect(center=(960, 450)))
+            if self.state["msg"]:
+                l_txt = pygame.font.SysFont("Arial", 30).render(self.state["msg"], True, self.colors["white"])
+                self.screen.blit(l_txt, l_txt.get_rect(center=(960, 500)))
+
+        # Menus & Boutons (Appels délégués au front)
+        if self.state["show_team"]: 
+            self.ui_rect_tool.draw_team_menu(self.screen, self.equipe, self.mon_pkm, self.state["team"], self.font_btn, self.font_ui)
+        elif self.state["show_conf"]: 
+            self.ui_rect_tool.draw_confirm_popup(self.screen, "Voulez-vous fuir ?", self.state["conf"], self.font_btn)
+        elif self.mon_pkm.is_alive() and self.adversaire.is_alive() and self.state["wait"] == 0:
+            for i, label in enumerate(self.actions):
+                self.ui_rect_tool.draw_buttons(self.screen, label, 700 + i * 350, 800, 300, 80, self.font_btn, i == self.state["idx"])
+
+    # --- Boucle Principale ---
+    def play_battle(self, data):
+        self._init_battle(data)
+        while self.battle_running:
             self.clock.tick(60)
-            self.screen.fill((30, 30, 40)) 
-            equipe_vivante = any(p.hp > 0 for p in equipe)
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT: return "QUIT"
-                
-                if event.type == pygame.KEYDOWN:
-                    if not equipe_vivante:
-                        if event.key == pygame.K_RETURN: return "MENU"
-                        continue
-
-                    # Gestion du menu d'équipe (Switch)
-                    if show_team:
-                        if event.key == pygame.K_UP: team_idx = (team_idx - 1) % len(equipe)
-                        elif event.key == pygame.K_DOWN: team_idx = (team_idx + 1) % len(equipe)
-                        elif event.key == pygame.K_ESCAPE and mon_pkm.is_alive(): show_team = False
-                        elif event.key == pygame.K_RETURN:
-                            nouveau = equipe[team_idx]
-                            if nouveau != mon_pkm and nouveau.hp > 0:
-                                mon_pkm = nouveau
-                                joueur_sprite = PokemonSprite(mon_pkm.sprite_path, (500, 650))
-                                combat_moteur.player_pokemon = mon_pkm 
-                                show_team, turn_wait = False, 40 
-                        continue
-
-                    # Gestion de la confirmation de fuite
-                    if show_confirm:
-                        if event.key == pygame.K_LEFT: confirm_idx = 0
-                        elif event.key == pygame.K_RIGHT: confirm_idx = 1
-                        if event.key == pygame.K_RETURN:
-                            if confirm_idx == 0:
-                                for p in equipe: p.hp = p.max_hp # Soin à la fuite
-                                self.db.save_team(equipe)
-                                return "MENU"
-                            else: show_confirm = False
-                        continue
-
-                    # Actions de combat standards
-                    if mon_pkm.is_alive() and adversaire.is_alive():
-                        if turn_wait == 0:
-                            if event.key == pygame.K_LEFT: action_idx = (action_idx - 1) % 3
-                            elif event.key == pygame.K_RIGHT: action_idx = (action_idx + 1) % 3
-                            if event.key == pygame.K_RETURN:
-                                if actions[action_idx] == "ATTAQUER":
-                                    joueur_sprite.set_state("attack")
-                                    combat_moteur.attack(mon_pkm, adversaire)
-                                    ennemi_sprite.set_state("hit")
-                                    turn_wait = 80
-                                elif actions[action_idx] == "EQUIPE":
-                                    show_team, team_idx = True, equipe.index(mon_pkm)
-                                elif actions[action_idx] == "FUITE":
-                                    show_confirm, confirm_idx = True, 1
-                    
-                    # Passer au prochain ennemi si vaincu
-                    elif not adversaire.is_alive() and event.key == pygame.K_RETURN:
-                        adversaire = get_new_ennemi()
-                        ennemi_sprite = PokemonSprite(adversaire.sprite_path, (1400, 300))
-                        combat_moteur.enemy_pokemon = adversaire
-                        level_up_msg, turn_wait = "", 0
-
-            # --- Logique post-attaque et XP ---
-            if not adversaire.is_alive() and not getattr(adversaire, 'processed', False):
-                nom_avant = mon_pkm.name
-                if combat_moteur.gain_xp(mon_pkm, adversaire):
-                    level_up_msg = f"LEVEL UP ! {mon_pkm.name} est Nv. {mon_pkm.lvl}"
-                    p_data = self.pokedex_dict.get(mon_pkm.id)
-                    if p_data and "evolution" in p_data:
-                        if mon_pkm.evolve(p_data["evolution"]):
-                            level_up_msg = f"EVOLUTION ! {nom_avant} -> {mon_pkm.name}"
-                            joueur_sprite = PokemonSprite(mon_pkm.sprite_path, (500, 650))
-                self.db.save_team(equipe)
-                self.db.add_to_save(adversaire)
-                adversaire.processed = True
-
-            # Attaque de l'adversaire (délai)
-            if not show_confirm and not show_team and turn_wait > 0:
-                turn_wait -= 1
-                if turn_wait == 40 and adversaire.is_alive() and mon_pkm.is_alive():
-                    ennemi_sprite.set_state("attack")
-                    combat_moteur.attack(adversaire, mon_pkm)
-                    joueur_sprite.set_state("hit")
-
-            # --- Affichage ---
-            joueur_sprite.update()
-            ennemi_sprite.update()
-            joueur_sprite.draw(self.screen)
-            ennemi_sprite.draw(self.screen)
-            
-            if mon_pkm.is_alive(): self.draw_ui(mon_pkm, 375, 790)
-            if adversaire.is_alive(): self.draw_ui(adversaire, 1275, 80)
-
-            # Interface de sélection
-            if mon_pkm.is_alive() and adversaire.is_alive() and not show_confirm and not show_team:
-                for i, label in enumerate(actions):
-                    self.ui_rect_tool.draw_buttons(self.screen, label, 550 + i * 350, 850, 300, 80, self.font_button, i == action_idx)
-            
-            # Messages d'état (Game Over / Victoire)
-            if not equipe_vivante:
-                txt = pygame.font.SysFont("Arial", 60, bold=True).render("GAME OVER", True, (255, 50, 50))
-                self.screen.blit(txt, txt.get_rect(center=(960, 500)))
-            elif not mon_pkm.is_alive():
-                txt = pygame.font.SysFont("Arial", 40, bold=True).render("Sélectionnez un autre Pokémon", True, (255, 100, 100))
-                self.screen.blit(txt, txt.get_rect(center=(960, 500)))
-            elif not adversaire.is_alive():
-                txt = pygame.font.SysFont("Arial", 40, bold=True).render(f"{adversaire.name.upper()} VAINCU !", True, (0, 255, 127))
-                self.screen.blit(txt, txt.get_rect(center=(960, 450)))
-                if level_up_msg:
-                    lvl_txt = pygame.font.SysFont("Arial", 30, bold=True).render(level_up_msg, True, (255, 255, 255))
-                    self.screen.blit(lvl_txt, lvl_txt.get_rect(center=(960, 510)))
-
-            if show_team:
-                pygame.draw.rect(self.screen, (35, 35, 55), (710, 150, 500, 650), border_radius=15)
-                for i, p in enumerate(equipe):
-                    self.ui_rect_tool.draw_buttons(self.screen, f"{p.name} ({int(p.hp)} HP)", 760, 200 + (i * 85), 400, 70, self.font_button, i == team_idx)
-            
-            if show_confirm: self.draw_confirm_popup("Voulez-vous fuir ?", confirm_idx)
-            
+            self._handle_events()
+            self._update_logic()
+            self._render_all()
             pygame.display.flip()
+        return self.next_state
 
     def run(self):
-        """Lance l'application et gère la transition entre les menus."""
         Loading_menu(self.screen).run()
         state = "MENU"
         while state != "QUIT":
             if state == "MENU":
                 data = First_screen(self.screen).run()
                 state = "COMBAT" if data and data != "QUIT" else "QUIT"
-            elif state == "COMBAT":
-                state = self.play_battle(data)
+            elif state == "COMBAT": state = self.play_battle(data)
         pygame.quit()

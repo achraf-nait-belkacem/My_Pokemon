@@ -46,3 +46,22 @@ class Combat:
 
     def win_check(self):
         return self.player_pokemon.hp <= 0 or self.enemy_pokemon.hp <= 0
+    
+    def distribute_team_xp(self, equipe, actif, adversaire):
+        # Calcul de l'XP de base (à adapter selon ta formule)
+        base_xp = (adversaire.lvl * 10) 
+        
+        messages = []
+        for pkm in equipe:
+            if not pkm.is_alive():
+                continue
+                
+            if pkm == actif:
+                # Le pokemon qui a combattu prend le max
+                if pkm.gain_xp(base_xp):
+                    messages.append(f"LEVEL UP ! {pkm.name} Nv. {pkm.lvl}")
+            else:
+                # Les autres prennent 25% de l'XP
+                pkm.gain_xp(base_xp // 4)
+                
+        return messages

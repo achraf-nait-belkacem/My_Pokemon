@@ -8,75 +8,73 @@ class DataManager:
         self.data_path = os.path.join(self.base_dir, "data", "pokemon.json")
         self.save_path = os.path.join(self.base_dir, "data", "save.json")
 
-    def load_pokedex(self):
-        if not os.path.exists(self.data_path): 
-            return []
-
-        with open(self.data_path, "r", encoding="utf-8") as f:
-            all_data = json.load(f)
-        data_by_id = {p["id"]: p for p in all_data}
-        
-        if not os.path.exists(self.save_path):
-            owned_data = [{"id": 1, "name": "Bulbizarre", "level": 5, "xp": 0, "current_hp": 45}] 
-            self.save_team_raw(owned_data)
-        else:
-            with open(self.save_path, "r", encoding="utf-8") as f:
-                owned_data = json.load(f)
-
-        owned = []
-        for data in owned_data:
-            p_id = data["id"]
-            if p_id not in data_by_id: 
-                continue
-            
-            p_info = data_by_id[p_id]
-            p_name = data.get("name", p_info["name"])
-            p_hp_base = p_info["hp"]
-            p_atk_base = p_info["attack"]
-
-            if p_name != p_info["name"] and "evolution" in p_info:
-                evo = p_info["evolution"]
-                if p_name == evo["next_form"]:
-                    p_hp_base += evo.get("hp_bonus", 0)
-                    p_atk_base += evo.get("attack_bonus", 0)
-
-            poke = Pokemon(
-                p_name, 
-                p_hp_base, 
-                data.get("level", 5), 
-                p_atk_base, 
-                p_info["defense"], 
-                p_info["type"], 
-                current_hp=data.get("current_hp")
-            )
-            
-            poke.update_sprite()
-            poke.id = p_id
-            poke.xp = data.get("xp", 0)
-            owned.append(poke)
-            
-        return owned
-
-    def save_team(self, pokemons_list):
-        new_save_data = []
-        for p in pokemons_list:
-            new_save_data.append({
-                "id": p.id,
-                "name": p.name,
-                "level": p.lvl,
-                "xp": getattr(p, 'xp', 0),
-                "current_hp": p.hp
-            })
-        self.save_team_raw(new_save_data)
-
     def load_save_raw(self):
         if not os.path.exists(self.save_path): return []
         with open(self.save_path, "r", encoding="utf-8") as f:
-            return json.load(f)
+            try: return json.load(f)
+            except: return []
 
     def save_team_raw(self, data):
+        os.makedirs(os.path.dirname(self.save_path), exist_ok=True)
         with open(self.save_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
+
+    def add_to_save(self, pokemon_to_add):
+        if pokemon_to_add.id is None: return
+        all_pkm = self.load_save_raw()
+        
+        if any(int(p["id"]) == int(pokemon_to_add.id) for p in all_pkm):
+            return
+
+        all_pkm.append({
+            "id": int(pokemon_to_add.id),
+            "name": str(pokemon_to_add.name),
+            "level": int(pokemon_to_add.lvl),
+            "xp": int(getattr(pokemon_to_add, 'xp', 0)),
+            "current_hp": int(pokemon_to_add.max_hp)
+        })
+        self.save_team_raw(all_pkm)
+
+    def save_team(self, current_team):
+        """Met à jour les stats des pokémons de l'équipe dans le fichier global."""
+        all_pkm = self.load_save_raw()
+        team_ids = [p.id for p in current_team]
+
+        for saved_pkm in all_pkm:
+            for active_pkm in current_team:
+                if int(saved_pkm["id"]) == int(active_pkm.id):
+                    saved_pkm["level"] = int(active_pkm.lvl)
+                    saved_pkm["xp"] = int(getattr(active_pkm, 'xp', 0))
+                    saved_pkm["current_hp"] = int(active_pkm.hp)
+                    saved_pkm["name"] = str(active_pkm.name)
+        
+        self.save_team_raw(all_pkm)
+
+    def load_pokedex(self):
+        if not os.path.exists(self.data_path): return []
+        with open(self.data_path, "r", encoding="utf-8") as f:
+            all_dict = {p["id"]: p for p in json.load(f)}
+        
+        save_data = self.load_save_raw()
+        if not save_data:
+            save_data = [{"id": 1, "name": "Bulbizarre", "level": 5, "xp": 0, "current_hp": 45},
+                         {"id" : 4, "name": "Salameche", "level": 5, "xp": 0, "current_hp": 39},
+                         {"id" : 7, "name": "Carapuce", "level": 5, "xp": 0, "current_hp": 44}
+                         ]
+            self.save_team_raw(save_data)
+
+        owned = []
+        for data in save_data:
+            p_id = data["id"]
+            if p_id in all_dict:
+                info = all_dict[p_id]
+                p = Pokemon(data.get("name", info["name"]), info["hp"], data["level"], 
+                            info["attack"], info["defense"], info["type"], data["current_hp"])
+                p.id = p_id
+                p.xp = data.get("xp", 0)
+                p.update_sprite()
+                owned.append(p)
+        return owned
 
     def load_all_ennemi(self):
         if not os.path.exists(self.data_path): return []
@@ -85,22 +83,7 @@ class DataManager:
         ennemis = []
         for p in data:
             poke = Pokemon(p["name"], p["hp"], p["level"], p["attack"], p["defense"], p["type"])
-            poke.id = p.get("id") 
+            poke.id = p.get("id")
             poke.update_sprite()
             ennemis.append(poke)
         return ennemis
-
-    def add_to_save(self, pokemon_to_add):
-        owned_data = self.load_save_raw()
-        already_owned = any(p["id"] == pokemon_to_add.id for p in owned_data)
-        if not already_owned:
-            owned_data.append({
-                "id": pokemon_to_add.id,
-                "name": pokemon_to_add.name,
-                "level": pokemon_to_add.lvl,
-                "xp": 0,
-                "current_hp": pokemon_to_add.max_hp
-            })
-            self.save_team_raw(owned_data)
-            return True 
-        return False

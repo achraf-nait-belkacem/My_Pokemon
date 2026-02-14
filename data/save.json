@@ -1,44 +1,51 @@
 [
     {
         "id": 1,
-        "name": "Herbizarre",
-        "level": 20,
-        "xp": 40,
-        "current_hp": 100
-    },
-    {
-        "id": 74,
-        "name": "Racaillou",
-        "level": 1,
+        "name": "Bulbizarre",
+        "level": 5,
         "xp": 75,
-        "current_hp": 42
+        "current_hp": 55
     },
     {
-        "id": 52,
-        "name": "Miaouss",
-        "level": 1,
-        "xp": 15,
-        "current_hp": 42
+        "id": 4,
+        "name": "Salameche",
+        "level": 5,
+        "xp": 70,
+        "current_hp": 49
     },
     {
-        "id": 54,
-        "name": "Psykokwak",
+        "id": 7,
+        "name": "Carapuce",
+        "level": 5,
+        "xp": 85,
+        "current_hp": 54
+    },
+    {
+        "id": 50,
+        "name": "Taupiqueur",
         "level": 1,
-        "xp": 30,
+        "xp": 10,
+        "current_hp": 12
+    },
+    {
+        "id": 66,
+        "name": "Machoc",
+        "level": 1,
+        "xp": 10,
+        "current_hp": 72
+    },
+    {
+        "id": 104,
+        "name": "Oselet",
+        "level": 1,
+        "xp": 10,
         "current_hp": 52
     },
     {
-        "id": 98,
-        "name": "Krabby",
+        "id": 95,
+        "name": "Onix",
         "level": 1,
-        "xp": 30,
-        "current_hp": 32
-    },
-    {
-        "id": 39,
-        "name": "Rondoudou",
-        "level": 1,
-        "xp": 45,
-        "current_hp": 117
+        "xp": 0,
+        "current_hp": 37
     }
 ]
