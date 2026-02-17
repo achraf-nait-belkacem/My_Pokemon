@@ -1,6 +1,4 @@
-import pygame
-import math
-import os
+from imports import *
 class PokemonSprite:
     def __init__(self, path_to_sprite, position, size=(200, 200)):
         self.base_pos = position

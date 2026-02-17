@@ -1,5 +1,4 @@
-import json
-import os
+from imports import *
 from backend.pokemon import Pokemon
 class DataManager:
     def __init__(self):

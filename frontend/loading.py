@@ -1,5 +1,4 @@
-import pygame
-from pygame.locals import *
+from imports import * 
 class Loading_menu:
     def __init__(self, screen):
         self.screen = screen

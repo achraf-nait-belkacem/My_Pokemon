@@ -1,8 +1,7 @@
-import pygame
-from config.colors import COLORS
+from imports import *
 class Rect:
     def __init__(self):
-        self.colors = COLORS
+        self.colors = COLORS  
     def draw_text_shadow(self, screen, text, font, color, pos):
         shadow = font.render(text, True, self.colors["shadow"])
         txt = font.render(text, True, color)
@@ -14,9 +13,12 @@ class Rect:
         pygame.draw.rect(screen, self.colors["white"], (x, y + 32, 250, 14), border_radius=7)
         pygame.draw.rect(screen, (30, 30, 30), (x+2, y+34, 246, 10), border_radius=5)
         ratio = min(1.0, pokemon.hp / pokemon.max_hp if pokemon.max_hp > 0 else 0)
-        if ratio > 0.5: hp_color = self.colors["hp_green"]
-        elif ratio > 0.2: hp_color = self.colors["hp_yellow"]
-        else: hp_color = self.colors["hp_red"]
+        if ratio > 0.5: 
+            hp_color = self.colors["hp_green"]
+        elif ratio > 0.2: 
+            hp_color = self.colors["hp_yellow"]
+        else: 
+            hp_color = self.colors["hp_red"]
         if ratio > 0:
             pygame.draw.rect(screen, hp_color, (x+2, y+34, int(246 * ratio), 10), border_radius=5)
         hp_txt = f"{max(0, int(pokemon.hp))} / {pokemon.max_hp}"
@@ -26,7 +28,10 @@ class Rect:
         if color is None:
             color = self.colors["accent"]
         button_rect = pygame.Rect(x, y, w, h)
-        bg_color = (min(color[0]+30, 255), min(color[1] + 30, 255), min(color[2] + 30, 255)) if is_selected else color
+        if is_selected:
+            bg_color = (min(color[0]+30, 255), min(color[1] + 30, 255), min(color[2] + 30, 255))
+        else:
+            bg_color = color
         pygame.draw.rect(screen, bg_color, button_rect, border_radius=12)
         if is_selected:
             pygame.draw.rect(screen, self.colors["white"], button_rect, 3, border_radius=12)

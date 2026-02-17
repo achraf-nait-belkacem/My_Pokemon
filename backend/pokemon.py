@@ -1,6 +1,4 @@
-import math
-import os
-import unicodedata
+from imports import *
 class Pokemon:
     def __init__(self, name, hp, level, attack, defense, pokemon_type, current_hp=None):
         self.name = name.strip()
@@ -37,10 +35,12 @@ class Pokemon:
             leveled_up = True
             old_max = self.max_hp
             self.recalc_stats()
-            if self.hp > 0: self.hp += (self.max_hp - old_max)
+            if self.hp > 0: 
+                self.hp += (self.max_hp - old_max)
         return leveled_up
     def evolve(self, evolution_data):
-        if not evolution_data or not self.can_evolve: return False
+        if not evolution_data or not self.can_evolve: 
+            return False
         if self.lvl >= evolution_data.get("level", 16):
             self.name = evolution_data["next_form"].strip()
             self.update_sprite()

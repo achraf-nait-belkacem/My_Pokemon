@@ -1,14 +1,6 @@
-import pygame
-import random
-import os
-import json
-from SpriteAnimation import PokemonSprite
-from frontend.loading import Loading_menu
-from frontend.first_screen import First_screen
-from backend.combat import Combat
-from frontend.utils import Rect 
-from backend.data_manager import DataManager
-from config.colors import COLORS
+from imports import *
+from frontend.utils import Rect
+from backend.pokemon import Pokemon
 class GameEngine:
     def __init__(self):
         pygame.init()
@@ -18,7 +10,7 @@ class GameEngine:
         self.ui_rect_tool = Rect()
         self.db = DataManager()
         self.pokedex_dict = self._load_pokedex_data()
-        self.colors = COLORS
+        self.colors = COLORS  
         self.font_btn = pygame.font.SysFont("Arial", 26, bold=True)
         self.font_ui = pygame.font.SysFont("Arial", 22, bold=True)
         self.font_lg = pygame.font.SysFont("Arial", 40, bold=True)
@@ -35,12 +27,17 @@ class GameEngine:
         try:
             with open(path, "r", encoding="utf-8") as f:
                 return {p["id"]: p for p in json.load(f)}
-        except Exception: return {}
+        except Exception: 
+            return {}
     def _spawn_ennemi(self, ennemis_possibles):
-        e = random.choice(ennemis_possibles)
-        e.lvl = random.randint(3, 8)
+        original = random.choice(ennemis_possibles)
+        e = Pokemon(original.name, original.base_hp, random.randint(3, 8),
+                    original.base_attack, original.base_defense, original.type)
+        e.id = original.id  
+        e.update_sprite()
         e.recalc_stats()
-        e.hp, e.processed = e.max_hp, False
+        e.hp = e.max_hp
+        e.processed = False
         return e
     def _init_battle(self, data):
         self.battle_running = True
@@ -48,7 +45,8 @@ class GameEngine:
         self.equipe = data["Equipe"][:6]
         self.ennemis_possibles = data["Ennemis possibles"]
         for p in self.equipe: 
-            if hasattr(p, 'recalc_stats'): p.recalc_stats()
+            if hasattr(p, 'recalc_stats'): 
+                p.recalc_stats()
         self.mon_pkm = next((p for p in self.equipe if p.hp > 0), self.equipe[0])
         self.adversaire = self._spawn_ennemi(self.ennemis_possibles)
         self.p_sprite = PokemonSprite(self.mon_pkm.sprite_path, (450, 550))
@@ -62,13 +60,18 @@ class GameEngine:
                 self.battle_running = False
                 self.next_state = "QUIT"
             if event.type == pygame.KEYDOWN:
-                if self.state["show_team"]: self._handle_team_input(event)
-                elif self.state["show_conf"]: self._handle_conf_input(event)
-                else: self._handle_main_input(event)
+                if self.state["show_team"]: 
+                    self._handle_team_input(event)
+                elif self.state["show_conf"]: 
+                    self._handle_conf_input(event)
+                else: 
+                    self._handle_main_input(event)
     def _handle_main_input(self, event):
         if self.mon_pkm.is_alive() and self.adversaire.is_alive() and self.state["wait"] == 0:
-            if event.key == pygame.K_LEFT: self.state["idx"] = (self.state["idx"] - 1) % 3
-            elif event.key == pygame.K_RIGHT: self.state["idx"] = (self.state["idx"] + 1) % 3
+            if event.key == pygame.K_LEFT: 
+                self.state["idx"] = (self.state["idx"] - 1) % 3
+            elif event.key == pygame.K_RIGHT: 
+                self.state["idx"] = (self.state["idx"] + 1) % 3
             elif event.key == pygame.K_RETURN:
                 act = self.actions[self.state["idx"]]
                 if act == "ATTAQUER":
@@ -76,14 +79,19 @@ class GameEngine:
                     self.combat.attack(self.mon_pkm, self.adversaire)
                     self.e_sprite.set_state("hit")
                     self.state["wait"] = 80
-                elif act == "EQUIPE": self.state["show_team"] = True
-                elif act == "FUITE": self.state["show_conf"] = True
+                elif act == "EQUIPE": 
+                    self.state["show_team"] = True
+                elif act == "FUITE": 
+                    self.state["show_conf"] = True
         elif not self.adversaire.is_alive() and event.key == pygame.K_RETURN:
             self._reset_battle()
     def _handle_team_input(self, event):
-        if event.key == pygame.K_UP: self.state["team"] = (self.state["team"] - 1) % len(self.equipe)
-        elif event.key == pygame.K_DOWN: self.state["team"] = (self.state["team"] + 1) % len(self.equipe)
-        elif event.key == pygame.K_ESCAPE and self.mon_pkm.is_alive(): self.state["show_team"] = False
+        if event.key == pygame.K_UP: 
+            self.state["team"] = (self.state["team"] - 1) % len(self.equipe)
+        elif event.key == pygame.K_DOWN: 
+            self.state["team"] = (self.state["team"] + 1) % len(self.equipe)
+        elif event.key == pygame.K_ESCAPE and self.mon_pkm.is_alive(): 
+            self.state["show_team"] = False
         elif event.key == pygame.K_RETURN:
             new_p = self.equipe[self.state["team"]]
             if new_p.is_alive():
@@ -92,14 +100,18 @@ class GameEngine:
                 self.combat.player_pokemon = self.mon_pkm
                 self.state["show_team"], self.state["wait"] = False, 0
     def _handle_conf_input(self, event):
-        if event.key == pygame.K_LEFT: self.state["conf"] = 0
-        elif event.key == pygame.K_RIGHT: self.state["conf"] = 1
+        if event.key == pygame.K_LEFT: 
+            self.state["conf"] = 0
+        elif event.key == pygame.K_RIGHT: 
+            self.state["conf"] = 1
         elif event.key == pygame.K_RETURN:
             if self.state["conf"] == 0:
-                for p in self.equipe: p.hp = p.max_hp
+                for p in self.equipe: 
+                    p.hp = p.max_hp
                 self.db.save_team(self.equipe)
                 self.battle_running = False
-            else: self.state["show_conf"] = False
+            else: 
+                self.state["show_conf"] = False
     def _reset_battle(self):
         self.adversaire = self._spawn_ennemi(self.ennemis_possibles)
         self.e_sprite = PokemonSprite(self.adversaire.sprite_path, (1350, 250))
@@ -120,12 +132,12 @@ class GameEngine:
             self.state["show_team"] = True
             self.state["team"] = self.equipe.index(self.mon_pkm)
     def _process_victory(self):
-        base_xp = self.adversaire.lvl * 20 
         level_ups = []
         for pkm in self.equipe:
             if pkm.is_alive():
-                gain = base_xp if pkm == self.mon_pkm else base_xp // 4
-                if pkm.gain_xp(gain):
+                is_active = (pkm == self.mon_pkm)
+                xp_gain = calculate_xp_gain(self.adversaire.lvl, is_active)
+                if pkm.gain_xp(xp_gain):
                     level_ups.append(f"{pkm.name} Nv.{pkm.lvl}")
                     pkm_data = self.pokedex_dict.get(pkm.id)
                     if pkm_data and pkm_data.get("evolution"):
@@ -135,12 +147,16 @@ class GameEngine:
                                 if pkm == self.mon_pkm:
                                     self.p_sprite = PokemonSprite(pkm.sprite_path, (450, 550))
                                 print(f"Félicitations ! {pkm_data['name']} a évolué en {pkm.name} !")
-        self.adversaire.processed = True 
-        self.state["msg"] = f"UP: {', '.join(level_ups)}" if level_ups else f"{self.mon_pkm.name} gagne {base_xp} XP"
+        self.adversaire.processed = True
+        self.db.add_to_save(self.adversaire)  
+        active_xp = calculate_xp_gain(self.adversaire.lvl, is_active_pokemon=True)
+        self.state["msg"] = f"UP: {', '.join(level_ups)}" if level_ups else f"{self.mon_pkm.name} gagne {active_xp} XP"
         self.db.save_team(self.equipe)
     def _render_all(self):
-        if self.background: self.screen.blit(self.background, (0, 0))
-        else: self.screen.fill(self.colors["bg_dark"])
+        if self.background: 
+            self.screen.blit(self.background, (0, 0))
+        else: 
+            self.screen.fill(self.colors["bg_dark"])
         self.p_sprite.draw(self.screen)
         self.e_sprite.draw(self.screen)
         if self.mon_pkm.is_alive(): 
@@ -176,5 +192,6 @@ class GameEngine:
             if state == "MENU":
                 data = First_screen(self.screen).run()
                 state = "COMBAT" if data and data != "QUIT" else "QUIT"
-            elif state == "COMBAT": state = self.play_battle(data)
+            elif state == "COMBAT": 
+                state = self.play_battle(data)
         pygame.quit()
