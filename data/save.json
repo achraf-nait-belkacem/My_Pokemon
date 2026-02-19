@@ -2,50 +2,29 @@
     {
         "id": 1,
         "name": "Bulbizarre",
-        "level": 8,
-        "xp": 40,
-        "current_hp": 75
+        "level": 6,
+        "xp": 0,
+        "current_hp": 70
     },
     {
         "id": 4,
         "name": "Salameche",
         "level": 5,
-        "xp": 45,
+        "xp": 0,
         "current_hp": 62
     },
     {
         "id": 7,
         "name": "Carapuce",
         "level": 5,
-        "xp": 45,
+        "xp": 25,
         "current_hp": 67
     },
     {
-        "id": 81,
-        "name": "Magneti",
-        "level": 3,
-        "xp": 70,
-        "current_hp": 43
-    },
-    {
-        "id": 79,
-        "name": "Ramoloss",
-        "level": 3,
-        "xp": 15,
-        "current_hp": 108
-    },
-    {
-        "id": 147,
-        "name": "Minidraco",
-        "level": 8,
-        "xp": 15,
-        "current_hp": 71
-    },
-    {
-        "id": 50,
-        "name": "Taupiqueur",
-        "level": 3,
+        "id": 60,
+        "name": "Ptitard",
+        "level": 5,
         "xp": 0,
-        "current_hp": 28
+        "current_hp": 63
     }
 ]
