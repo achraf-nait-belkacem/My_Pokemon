@@ -1,6 +1,18 @@
 from imports import *
 from frontend.utils import Rect
 from backend.pokemon import Pokemon
+import sys
+import ctypes
+
+
+
+if sys.platform == "win32":
+    try:
+        ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
+
+
 class GameEngine:
     def __init__(self):
         pygame.init()
