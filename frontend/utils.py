@@ -1,4 +1,6 @@
-from imports import *
+import pygame
+
+from config.colors import COLORS
 class Rect:
     def __init__(self):
         self.colors = COLORS  

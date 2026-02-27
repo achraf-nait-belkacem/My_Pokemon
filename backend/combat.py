@@ -1,4 +1,8 @@
-from imports import *
+import json
+import os
+import random
+
+from config.game_balance import DAMAGE_BASE_MULTIPLIER, MINIMUM_DAMAGE, MISS_CHANCE
 class Combat:
     def __init__(self, player_pokemon, enemy_pokemon):
         self.player_pokemon = player_pokemon

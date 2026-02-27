@@ -1,4 +1,6 @@
-from imports import *
+import math
+import os
+import unicodedata
 class Pokemon:
     def __init__(self, name, hp, level, attack, defense, pokemon_type, current_hp=None):
         self.name = name.strip()

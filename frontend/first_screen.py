@@ -1,4 +1,7 @@
-from imports import * 
+import pygame
+from pygame.locals import QUIT
+
+from backend.data_manager import DataManager
 from frontend.utils import Rect
 class First_screen:
     def __init__(self, screen):
