@@ -16,7 +16,7 @@ class PokemonSprite:
                 raise FileNotFoundError
             return pygame.image.load(str(path)).convert_alpha()
         except (pygame.error, FileNotFoundError):
-            default_path = "assets/sprites/default.png"
+            default_path = "assets/sprites/pokemonpng/default.png"
             if os.path.exists(default_path):
                 return pygame.image.load(default_path).convert_alpha()
             else:

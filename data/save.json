@@ -2,44 +2,44 @@
     {
         "id": 1,
         "name": "Bulbizarre",
-        "level": 11,
-        "xp": 20,
-        "current_hp": 83
+        "level": 12,
+        "xp": 80,
+        "current_hp": 0
     },
     {
         "id": 4,
         "name": "Salameche",
-        "level": 6,
-        "xp": 30,
-        "current_hp": 64
+        "level": 12,
+        "xp": 5,
+        "current_hp": 79
     },
     {
         "id": 7,
         "name": "Carapuce",
-        "level": 6,
-        "xp": 55,
-        "current_hp": 69
+        "level": 8,
+        "xp": 85,
+        "current_hp": 74
     },
     {
         "id": 60,
         "name": "Ptitard",
-        "level": 6,
-        "xp": 30,
-        "current_hp": 65
+        "level": 9,
+        "xp": 50,
+        "current_hp": 73
     },
     {
         "id": 79,
         "name": "Ramoloss",
-        "level": 3,
-        "xp": 95,
-        "current_hp": 108
+        "level": 10,
+        "xp": 55,
+        "current_hp": 125
     },
     {
         "id": 25,
         "name": "Pikachu",
-        "level": 4,
-        "xp": 95,
-        "current_hp": 55
+        "level": 7,
+        "xp": 65,
+        "current_hp": 0
     },
     {
         "id": 104,
@@ -51,8 +51,78 @@
     {
         "id": 43,
         "name": "Mystherbe",
+        "level": 7,
+        "xp": 0,
+        "current_hp": 73
+    },
+    {
+        "id": 98,
+        "name": "Krabby",
+        "level": 8,
+        "xp": 0,
+        "current_hp": 60
+    },
+    {
+        "id": 39,
+        "name": "Rondoudou",
+        "level": 8,
+        "xp": 75,
+        "current_hp": 145
+    },
+    {
+        "id": 66,
+        "name": "Machoc",
+        "level": 6,
+        "xp": 75,
+        "current_hp": 95
+    },
+    {
+        "id": 19,
+        "name": "Rattata",
+        "level": 8,
+        "xp": 0,
+        "current_hp": 60
+    },
+    {
+        "id": 27,
+        "name": "Sabelette",
+        "level": 6,
+        "xp": 40,
+        "current_hp": 75
+    },
+    {
+        "id": 90,
+        "name": "Kokiyas",
         "level": 4,
         "xp": 0,
-        "current_hp": 65
+        "current_hp": 50
+    },
+    {
+        "id": 81,
+        "name": "Magneti",
+        "level": 3,
+        "xp": 0,
+        "current_hp": 43
+    },
+    {
+        "id": 58,
+        "name": "Caninos",
+        "level": 7,
+        "xp": 0,
+        "current_hp": 83
+    },
+    {
+        "id": 52,
+        "name": "Miaouss",
+        "level": 4,
+        "xp": 0,
+        "current_hp": 60
+    },
+    {
+        "id": 54,
+        "name": "Psykokwak",
+        "level": 8,
+        "xp": 0,
+        "current_hp": 80
     }
 ]

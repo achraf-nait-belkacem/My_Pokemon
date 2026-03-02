@@ -11,7 +11,7 @@ class Pokemon:
         self.max_hp = self.attack = self.defense = 0
         self.recalc_stats()
         self.hp = float(current_hp) if current_hp is not None else float(self.max_hp)
-        self.sprite_path = "assets/sprites/default.png"
+        self.sprite_path = "assets/sprites/pokemonpng/default.png"
         self.update_sprite()
         self.id = None 
         self.processed = False 
@@ -20,8 +20,8 @@ class Pokemon:
         name_clean = "".join(c for c in unicodedata.normalize('NFD', self.name) if unicodedata.category(c) != 'Mn')
         filename = name_clean.lower().strip().replace(" ", "")
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        abs_path = os.path.join(base_dir, "assets", "sprites", f"{filename}.png")
-        self.sprite_path = abs_path if os.path.exists(abs_path) else "assets/sprites/default.png"
+        abs_path = os.path.join(base_dir, "assets", "sprites", "pokemonpng", f"{filename}.png")
+        self.sprite_path = abs_path if os.path.exists(abs_path) else "assets/sprites/pokemonpng/default.png"
     def recalc_stats(self):
         self.max_hp = math.ceil(self.base_hp + (self.lvl * 2.5) + 10)
         self.attack = math.ceil(self.base_attack + (self.lvl * 1.5))

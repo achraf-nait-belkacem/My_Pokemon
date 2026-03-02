@@ -25,6 +25,16 @@ if sys.platform == "win32":
 
 
 class BattleScene:
+    # Sprite positions: same Y so they face each other (one in front of the other)
+    PLAYER_SPRITE_POS = (420, 520)
+    ENEMY_SPRITE_POS = (1500, 520)
+    # HP/name panel: 250px wide; position centered under/above each sprite
+    PLAYER_STATS_POS = (PLAYER_SPRITE_POS[0] - 125, 630)   # below player sprite
+    ENEMY_STATS_POS = (ENEMY_SPRITE_POS[0] - 125, 350)    # just above enemy sprite (same vertical zone)
+    # Team bars (dots): next to each side
+    PLAYER_TEAM_BAR_POS = (PLAYER_SPRITE_POS[0] - 60, 600)
+    ENEMY_TEAM_BAR_POS = (ENEMY_SPRITE_POS[0] - 60, 320)  # just above enemy stats
+
     def __init__(self, screen, clock, db, pokedex_dict, colors, ui_rect_tool, font_btn, font_ui, font_lg, background):
         self.screen = screen
         self.clock = clock
@@ -58,10 +68,10 @@ class BattleScene:
                 p.recalc_stats()
         self.mon_pkm = next((p for p in self.equipe if p.hp > 0), self.equipe[0])
         self.adversaire = self._spawn_ennemi(self.ennemis_possibles)
-        self.p_sprite = PokemonSprite(self.mon_pkm.sprite_path, (450, 550))
-        self.e_sprite = PokemonSprite(self.adversaire.sprite_path, (1350, 250))
+        self.p_sprite = PokemonSprite(self.mon_pkm.sprite_path, self.PLAYER_SPRITE_POS)
+        self.e_sprite = PokemonSprite(self.adversaire.sprite_path, self.ENEMY_SPRITE_POS)
         self.combat = Combat(self.mon_pkm, self.adversaire)
-        self.state = {"idx": 0, "conf": 1, "team": 0, "show_conf": False, "show_team": False, "wait": 0, "msg": ""}
+        self.state = {"idx": 0, "conf": 1, "team": 0, "show_conf": False, "show_team": False, "show_defeat": False, "wait": 0, "msg": ""}
         self.actions = ["ATTAQUER", "EQUIPE", "FUITE"]
 
     def _handle_events(self):
@@ -70,7 +80,11 @@ class BattleScene:
                 self.battle_running = False
                 self.next_state = "QUIT"
             if event.type == pygame.KEYDOWN:
-                if self.state["show_team"]:
+                if self.state["show_defeat"]:
+                    if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                        self.battle_running = False
+                        self.next_state = "MENU"
+                elif self.state["show_team"]:
                     self._handle_team_input(event)
                 elif self.state["show_conf"]:
                     self._handle_conf_input(event)
@@ -108,7 +122,7 @@ class BattleScene:
             new_p = self.equipe[self.state["team"]]
             if new_p.is_alive():
                 self.mon_pkm = new_p
-                self.p_sprite = PokemonSprite(self.mon_pkm.sprite_path, (450, 550))
+                self.p_sprite = PokemonSprite(self.mon_pkm.sprite_path, self.PLAYER_SPRITE_POS)
                 self.combat.player_pokemon = self.mon_pkm
                 self.state["show_team"], self.state["wait"] = False, 0
 
@@ -128,7 +142,7 @@ class BattleScene:
 
     def _reset_battle(self):
         self.adversaire = self._spawn_ennemi(self.ennemis_possibles)
-        self.e_sprite = PokemonSprite(self.adversaire.sprite_path, (1350, 250))
+        self.e_sprite = PokemonSprite(self.adversaire.sprite_path, self.ENEMY_SPRITE_POS)
         self.combat.enemy_pokemon = self.adversaire
         self.state["msg"] = ""
 
@@ -143,9 +157,12 @@ class BattleScene:
                 self.e_sprite.set_state("attack")
                 self.combat.attack(self.adversaire, self.mon_pkm)
                 self.p_sprite.set_state("hit")
-        if not self.mon_pkm.is_alive() and not self.state["show_team"] and self.state["wait"] == 0:
-            self.state["show_team"] = True
-            self.state["team"] = self.equipe.index(self.mon_pkm)
+        if not self.mon_pkm.is_alive() and not self.state["show_team"] and not self.state["show_defeat"] and self.state["wait"] == 0:
+            if not any(p.is_alive() for p in self.equipe):
+                self.state["show_defeat"] = True
+            else:
+                self.state["show_team"] = True
+                self.state["team"] = self.equipe.index(self.mon_pkm)
 
     def _process_victory(self):
         level_ups = []
@@ -161,7 +178,7 @@ class BattleScene:
                         if pkm.lvl >= evo["level"] and pkm.name != evo["next_form"]:
                             if pkm.evolve(evo):
                                 if pkm == self.mon_pkm:
-                                    self.p_sprite = PokemonSprite(pkm.sprite_path, (450, 550))
+                                    self.p_sprite = PokemonSprite(pkm.sprite_path, self.PLAYER_SPRITE_POS)
                                 print(f"Félicitations ! {pkm_data['name']} a évolué en {pkm.name} !")
         self.adversaire.processed = True
         self.db.add_to_save(self.adversaire)
@@ -183,6 +200,24 @@ class BattleScene:
             pygame.draw.rect(self.screen, color, rect, border_radius=4)
             pygame.draw.rect(self.screen, self.colors["black"], rect, 2, border_radius=4)
 
+    def _draw_defeat_bilan(self):
+        """Draw defeat summary and prompt to return to menu."""
+        overlay = pygame.Surface((1920, 1000), pygame.SRCALPHA)
+        overlay.fill(self.colors["overlay"])
+        self.screen.blit(overlay, (0, 0))
+        box = pygame.Rect(560, 300, 800, 400)
+        pygame.draw.rect(self.screen, (45, 45, 65), box, border_radius=15)
+        pygame.draw.rect(self.screen, self.colors["white"], box, 3, border_radius=15)
+        title = self.font_lg.render("DÉFAITE", True, self.colors["alert"])
+        self.screen.blit(title, title.get_rect(center=(960, 380)))
+        msg = pygame.font.SysFont("Arial", 28).render("Tous vos Pokémon sont K.O.", True, self.colors["white"])
+        self.screen.blit(msg, msg.get_rect(center=(960, 450)))
+        enemy_name = self.adversaire.name.upper() if self.adversaire else ""
+        sub = pygame.font.SysFont("Arial", 22).render(f"Vous avez perdu face à {enemy_name}.", True, self.colors["white"])
+        self.screen.blit(sub, sub.get_rect(center=(960, 500)))
+        prompt = pygame.font.SysFont("Arial", 24).render("Appuyez sur Entrée pour revenir au menu", True, self.colors["white"])
+        self.screen.blit(prompt, prompt.get_rect(center=(960, 580)))
+
     def _render_all(self):
         if self.background:
             self.screen.blit(self.background, (0, 0))
@@ -191,19 +226,21 @@ class BattleScene:
         self.p_sprite.draw(self.screen)
         self.e_sprite.draw(self.screen)
         if self.mon_pkm.is_alive():
-            self.ui_rect_tool.draw_pokemon_stats(self.screen, self.mon_pkm, 375, 750, self.font_ui)
+            self.ui_rect_tool.draw_pokemon_stats(self.screen, self.mon_pkm, self.PLAYER_STATS_POS[0], self.PLAYER_STATS_POS[1], self.font_ui)
         if self.adversaire.is_alive():
-            self.ui_rect_tool.draw_pokemon_stats(self.screen, self.adversaire, 1275, 80, self.font_ui)
+            self.ui_rect_tool.draw_pokemon_stats(self.screen, self.adversaire, self.ENEMY_STATS_POS[0], self.ENEMY_STATS_POS[1], self.font_ui)
         # team status bars (how many Pokémon left)
-        self._draw_team_bar(self.equipe, 360, 720)
-        self._draw_team_bar([self.adversaire], 1260, 50)
+        self._draw_team_bar(self.equipe, self.PLAYER_TEAM_BAR_POS[0], self.PLAYER_TEAM_BAR_POS[1])
+        self._draw_team_bar([self.adversaire], self.ENEMY_TEAM_BAR_POS[0], self.ENEMY_TEAM_BAR_POS[1])
         if not self.adversaire.is_alive():
             txt = self.font_lg.render(f"{self.adversaire.name.upper()} VAINCU !", True, self.colors["victory"])
             self.screen.blit(txt, txt.get_rect(center=(960, 450)))
             if self.state["msg"]:
                 l_txt = pygame.font.SysFont("Arial", 30).render(self.state["msg"], True, self.colors["white"])
                 self.screen.blit(l_txt, l_txt.get_rect(center=(960, 500)))
-        if self.state["show_team"]:
+        if self.state["show_defeat"]:
+            self._draw_defeat_bilan()
+        elif self.state["show_team"]:
             self.ui_rect_tool.draw_team_menu(self.screen, self.equipe, self.mon_pkm, self.state["team"], self.font_btn, self.font_ui)
         elif self.state["show_conf"]:
             self.ui_rect_tool.draw_confirm_popup(self.screen, "Voulez-vous fuir ?", self.state["conf"], self.font_btn)
@@ -237,7 +274,7 @@ class GameEngine:
         self.font_lg = pygame.font.SysFont("Arial", 40, bold=True)
         self.background = self._load_background()
     def _load_background(self):
-        path = os.path.join("assets/sprites", "battle_bg.png")
+        path = os.path.join("assets", "sprites", "backgrounds", "battle_bg.png")
         if os.path.exists(path):
             img = pygame.image.load(path).convert()
             return pygame.transform.scale(img, (1920, 1000))
