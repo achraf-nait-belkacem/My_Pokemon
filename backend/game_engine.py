@@ -169,6 +169,20 @@ class BattleScene:
         self.state["msg"] = f"UP: {', '.join(level_ups)}" if level_ups else f"{self.mon_pkm.name} gagne {active_xp} XP"
         self.db.save_team(self.equipe)
 
+    def _draw_team_bar(self, pokemons, x, y):
+        if not pokemons:
+            return
+        box_size = 20
+        spacing = 6
+        for idx, p in enumerate(pokemons):
+            rect_x = x + idx * (box_size + spacing)
+            rect = pygame.Rect(rect_x, y, box_size, box_size)
+            is_alive = getattr(p, "is_alive", None)
+            alive = is_alive() if callable(is_alive) else getattr(p, "hp", 0) > 0
+            color = self.colors["hp_green"] if alive else self.colors["hp_red"]
+            pygame.draw.rect(self.screen, color, rect, border_radius=4)
+            pygame.draw.rect(self.screen, self.colors["black"], rect, 2, border_radius=4)
+
     def _render_all(self):
         if self.background:
             self.screen.blit(self.background, (0, 0))
@@ -180,6 +194,9 @@ class BattleScene:
             self.ui_rect_tool.draw_pokemon_stats(self.screen, self.mon_pkm, 375, 750, self.font_ui)
         if self.adversaire.is_alive():
             self.ui_rect_tool.draw_pokemon_stats(self.screen, self.adversaire, 1275, 80, self.font_ui)
+        # team status bars (how many Pokémon left)
+        self._draw_team_bar(self.equipe, 360, 720)
+        self._draw_team_bar([self.adversaire], 1260, 50)
         if not self.adversaire.is_alive():
             txt = self.font_lg.render(f"{self.adversaire.name.upper()} VAINCU !", True, self.colors["victory"])
             self.screen.blit(txt, txt.get_rect(center=(960, 450)))
